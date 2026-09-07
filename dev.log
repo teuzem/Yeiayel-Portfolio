@@ -1,0 +1,9 @@
+   ▲ Next.js 16.0.0 (Turbopack)
+   - Local:        http://localhost:3100
+   - Network:      http://172.26.208.1:3100
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 7.7s
+ ○ Compiling / ...
+ GET / 200 in 3.8s (compile: 19ms, proxy.ts: 17ms, render: 3.8s)

@@ -1,0 +1,13 @@
+packages:
+  - "."
+
+overrides:
+  next: file:./vendor/next-16.3.4.tgz
+  '@next/swc-win32-x64-msvc': file:./vendor/swc-win32-16.3.4.tgz
+  '@img/sharp-win32-x64': file:./vendor/sharp-win32-0.35.4.tgz
+
+allowBuilds:
+  '@clerk/shared': true
+  '@tailwindcss/oxide': true
+  esbuild: true
+  sharp: true

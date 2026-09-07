@@ -1,0 +1,22 @@
+   ▲ Next.js 16.0.0 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://172.26.208.1:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ○ Compiling proxy ...
+
+   We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+   The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+   	- include was updated to add '.next\dev/types/**/*.ts'
+   	- include was updated to add '.next\dev/types/**/*.ts'
+
+ ✓ Ready in 19s
+ ○ Compiling /_not-found/page ...
+ HEAD /en 404 in 11.2s (compile: 9.8s, proxy.ts: 898ms, render: 536ms)
+ GET /en/posts/airpods-pro-3-review 404 in 161ms (compile: 24ms, proxy.ts: 28ms, render: 109ms)
+ GET /en/posts/airpods-pro-3-review 404 in 150ms (compile: 41ms, proxy.ts: 19ms, render: 90ms)
+ GET /en/posts/airpods-pro-3-review 404 in 192ms (compile: 22ms, proxy.ts: 25ms, render: 145ms)
+ ○ Compiling / ...
+[?25h

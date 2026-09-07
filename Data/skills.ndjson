@@ -1,0 +1,68 @@
+{"_type":"skill","_id":"skill-python","name":"Python","category":"backend","proficiency":"expert","percentage":90,"yearsOfExperience":3,"color":"#3776AB"}
+{"_type":"skill","_id":"skill-django","name":"Django","category":"backend","proficiency":"advanced","percentage":82,"yearsOfExperience":2,"color":"#092E20"}
+{"_type":"skill","_id":"skill-flask","name":"Flask","category":"backend","proficiency":"advanced","percentage":82,"yearsOfExperience":2,"color":"#000000"}
+{"_type":"skill","_id":"skill-fastapi","name":"FastAPI","category":"backend","proficiency":"advanced","percentage":84,"yearsOfExperience":2,"color":"#009485"}
+{"_type":"skill","_id":"skill-python-backend","name":"API design & REST (Python)","category":"backend","proficiency":"advanced","percentage":83,"yearsOfExperience":2,"color":"#E34F26"}
+{"_type":"skill","_id":"skill-numpy","name":"NumPy","category":"data","proficiency":"advanced","percentage":84,"yearsOfExperience":2,"color":"#4D77CF"}
+{"_type":"skill","_id":"skill-pandas","name":"Pandas","category":"data","proficiency":"advanced","percentage":85,"yearsOfExperience":3,"color":"#7A7A7A"}
+{"_type":"skill","_id":"skill-matplotlib","name":"Matplotlib / Seaborn","category":"data","proficiency":"advanced","percentage":83,"yearsOfExperience":2,"color":"#11557C"}
+{"_type":"skill","_id":"skill-scikit","name":"Scikit-learn","category":"ai-ml","proficiency":"advanced","percentage":84,"yearsOfExperience":2,"color":"#F7931E"}
+{"_type":"skill","_id":"skill-pytorch","name":"PyTorch","category":"ai-ml","proficiency":"intermediate","percentage":72,"yearsOfExperience":1,"color":"#EE4C2C"}
+{"_type":"skill","_id":"skill-tensorflow","name":"TensorFlow / Keras","category":"ai-ml","proficiency":"intermediate","percentage":72,"yearsOfExperience":1,"color":"#FF8000"}
+{"_type":"skill","_id":"skill-ml","name":"Machine Learning","category":"ai-ml","proficiency":"advanced","percentage":85,"yearsOfExperience":2,"color":"#10A37F"}
+{"_type":"skill","_id":"skill-deep-learning","name":"Deep Learning","category":"ai-ml","proficiency":"advanced","percentage":78,"yearsOfExperience":1,"color":"#412991"}
+{"_type":"skill","_id":"skill-llm","name":"LLM / AI Agents","category":"ai-ml","proficiency":"advanced","percentage":87,"yearsOfExperience":2,"color":"#10A37F"}
+{"_type":"skill","_id":"skill-rag","name":"RAG & Retrieval","category":"ai-ml","proficiency":"advanced","percentage":84,"yearsOfExperience":2,"color":"#7C3AED"}
+{"_type":"skill","_id":"skill-langchain","name":"LangChain","category":"ai-ml","proficiency":"advanced","percentage":84,"yearsOfExperience":2,"color":"#4A6E57"}
+{"_type":"skill","_id":"skill-openrouter","name":"OpenRouter / LLM APIs","category":"ai-ml","proficiency":"advanced","percentage":86,"yearsOfExperience":2,"color":"#6A4C93"}
+{"_type":"skill","_id":"skill-nlp","name":"NLP & Text Mining","category":"ai-ml","proficiency":"advanced","percentage":80,"yearsOfExperience":2,"color":"#008080"}
+{"_type":"skill","_id":"skill-computer-vision","name":"Computer Vision","category":"ai-ml","proficiency":"intermediate","percentage":70,"yearsOfExperience":1,"color":"#4B0082"}
+{"_type":"skill","_id":"skill-big-data","name":"Big Data Processing","category":"data","proficiency":"intermediate","percentage":75,"yearsOfExperience":2,"color":"#8D552A"}
+{"_type":"skill","_id":"skill-spark","name":"Apache Spark / PySpark","category":"data","proficiency":"intermediate","percentage":70,"yearsOfExperience":1,"color":"#E25A1C"}
+{"_type":"skill","_id":"skill-statistics","name":"Statistics & Probability","category":"data","proficiency":"advanced","percentage":84,"yearsOfExperience":3,"color":"#3B5998"}
+{"_type":"skill","_id":"skill-r","name":"R for Data Science","category":"data","proficiency":"intermediate","percentage":72,"yearsOfExperience":1,"color":"#198CE7"}
+{"_type":"skill","_id":"skill-excel","name":"Excel for Data Analysis","category":"data","proficiency":"expert","percentage":90,"yearsOfExperience":4,"color":"#217346"}
+{"_type":"skill","_id":"skill-powerbi","name":"Power BI / Data Viz","category":"data","proficiency":"intermediate","percentage":75,"yearsOfExperience":1,"color":"#F2C811"}
+{"_type":"skill","_id":"skill-bi","name":"Business Intelligence","category":"data","proficiency":"advanced","percentage":80,"yearsOfExperience":2,"color":"#00A2E8"}
+{"_type":"skill","_id":"skill-sql-analytics","name":"SQL for Analytics","category":"data","proficiency":"advanced","percentage":85,"yearsOfExperience":3,"color":"#336791"}
+{"_type":"skill","_id":"skill-react","name":"React","category":"frontend","proficiency":"expert","percentage":88,"yearsOfExperience":3,"color":"#61DAFB"}
+{"_type":"skill","_id":"skill-nextjs","name":"Next.js","category":"frontend","proficiency":"expert","percentage":90,"yearsOfExperience":3,"color":"#000000"}
+{"_type":"skill","_id":"skill-typescript","name":"TypeScript","category":"frontend","proficiency":"advanced","percentage":84,"yearsOfExperience":2,"color":"#3178C6"}
+{"_type":"skill","_id":"skill-javascript","name":"JavaScript","category":"frontend","proficiency":"expert","percentage":90,"yearsOfExperience":4,"color":"#F7DF1E"}
+{"_type":"skill","_id":"skill-vue","name":"Vue.js","category":"frontend","proficiency":"intermediate","percentage":72,"yearsOfExperience":1,"color":"#42B883"}
+{"_type":"skill","_id":"skill-css","name":"HTML / CSS / Tailwind","category":"frontend","proficiency":"expert","percentage":90,"yearsOfExperience":4,"color":"#06B6D4"}
+{"_type":"skill","_id":"skill-pwa","name":"PWA & Offline Web","category":"frontend","proficiency":"advanced","percentage":80,"yearsOfExperience":2,"color":"#5D5FEF"}
+{"_type":"skill","_id":"skill-react-native","name":"React Native","category":"mobile","proficiency":"intermediate","percentage":70,"yearsOfExperience":1,"color":"#61DAFB"}
+{"_type":"skill","_id":"skill-mobile","name":"Mobile App Development","category":"mobile","proficiency":"intermediate","percentage":72,"yearsOfExperience":1,"color":"#0E1217"}
+{"_type":"skill","_id":"skill-supabase","name":"Supabase","category":"backend","proficiency":"expert","percentage":88,"yearsOfExperience":2,"color":"#3ECF8E"}
+{"_type":"skill","_id":"skill-node","name":"Node.js / Express","category":"backend","proficiency":"advanced","percentage":82,"yearsOfExperience":2,"color":"#68A063"}
+{"_type":"skill","_id":"skill-postgresql","name":"PostgreSQL","category":"database","proficiency":"advanced","percentage":80,"yearsOfExperience":3,"color":"#336791"}
+{"_type":"skill","_id":"skill-mysql","name":"MySQL","category":"database","proficiency":"advanced","percentage":82,"yearsOfExperience":3,"color":"#00758F"}
+{"_type":"skill","_id":"skill-mongodb","name":"MongoDB","category":"database","proficiency":"intermediate","percentage":74,"yearsOfExperience":1,"color":"#47A248"}
+{"_type":"skill","_id":"skill-sql","name":"SQL / Databases","category":"database","proficiency":"advanced","percentage":85,"yearsOfExperience":3,"color":"#4B5E8C"}
+{"_type":"skill","_id":"skill-docker","name":"Docker","category":"devops","proficiency":"advanced","percentage":82,"yearsOfExperience":2,"color":"#2496ED"}
+{"_type":"skill","_id":"skill-kubernetes","name":"Kubernetes","category":"devops","proficiency":"intermediate","percentage":70,"yearsOfExperience":1,"color":"#326CE5"}
+{"_type":"skill","_id":"skill-devops","name":"CI/CD & DevOps","category":"devops","proficiency":"advanced","percentage":80,"yearsOfExperience":2,"color":"#E2574C"}
+{"_type":"skill","_id":"skill-mlops","name":"MLOps & Model Deployment","category":"devops","proficiency":"intermediate","percentage":72,"yearsOfExperience":1,"color":"#00968B"}
+{"_type":"skill","_id":"skill-git","name":"Git / GitHub Actions","category":"devops","proficiency":"advanced","percentage":85,"yearsOfExperience":3,"color":"#F05032"}
+{"_type":"skill","_id":"skill-monitoring","name":"Monitoring & Observability","category":"devops","proficiency":"intermediate","percentage":72,"yearsOfExperience":1,"color":"#1F3A5F"}
+{"_type":"skill","_id":"skill-aws","name":"AWS","category":"cloud","proficiency":"advanced","percentage":78,"yearsOfExperience":2,"color":"#FF9900"}
+{"_type":"skill","_id":"skill-azure","name":"Azure","category":"cloud","proficiency":"intermediate","percentage":70,"yearsOfExperience":1,"color":"#0089D1"}
+{"_type":"skill","_id":"skill-gcp","name":"Google Cloud","category":"cloud","proficiency":"intermediate","percentage":70,"yearsOfExperience":1,"color":"#4285F4"}
+{"_type":"skill","_id":"skill-vps","name":"VPS & Server Admin (Linux)","category":"cloud","proficiency":"advanced","percentage":84,"yearsOfExperience":3,"color":"#1793D1"}
+{"_type":"skill","_id":"skill-nginx","name":"Nginx / Reverse Proxy / SSL","category":"cloud","proficiency":"advanced","percentage":83,"yearsOfExperience":3,"color":"#009639"}
+{"_type":"skill","_id":"skill-network","name":"Networking (Cisco, TCP/IP)","category":"network","proficiency":"expert","percentage":91,"yearsOfExperience":3,"color":"#1BA94C"}
+{"_type":"skill","_id":"skill-security","name":"Cybersecurity & Systems","category":"security","proficiency":"advanced","percentage":86,"yearsOfExperience":3,"color":"#FF3D00"}
+{"_type":"skill","_id":"skill-videoprotection","name":"Video Surveillance & Fire Safety","category":"security","proficiency":"advanced","percentage":84,"yearsOfExperience":2,"color":"#37474F"}
+{"_type":"skill","_id":"skill-it-support","name":"IT Support & Maintenance","category":"network","proficiency":"expert","percentage":90,"yearsOfExperience":3,"color":"#00695C"}
+{"_type":"skill","_id":"skill-wordpress","name":"WordPress","category":"frontend","proficiency":"expert","percentage":92,"yearsOfExperience":4,"color":"#21759B"}
+{"_type":"skill","_id":"skill-seo","name":"SEO / SEA","category":"marketing","proficiency":"advanced","percentage":86,"yearsOfExperience":2,"color":"#4285F4"}
+{"_type":"skill","_id":"skill-google-business","name":"Google Business Profile / Local SEO","category":"marketing","proficiency":"advanced","percentage":85,"yearsOfExperience":2,"color":"#34A853"}
+{"_type":"skill","_id":"skill-content","name":"Content Creation","category":"marketing","proficiency":"expert","percentage":92,"yearsOfExperience":2,"color":"#FF5722"}
+{"_type":"skill","_id":"skill-social-ads","name":"Paid Ads (Meta/Google)","category":"marketing","proficiency":"advanced","percentage":86,"yearsOfExperience":2,"color":"#1877F2"}
+{"_type":"skill","_id":"skill-community","name":"Community Management","category":"marketing","proficiency":"expert","percentage":95,"yearsOfExperience":2,"color":"#E4405F"}
+{"_type":"skill","_id":"skill-communication","name":"Communication & Teamwork","category":"soft-skills","proficiency":"expert","percentage":93,"yearsOfExperience":4}
+{"_type":"skill","_id":"skill-problem-solving","name":"Analytical Problem Solving","category":"soft-skills","proficiency":"expert","percentage":95,"yearsOfExperience":4}
+{"_type":"skill","_id":"skill-resilience","name":"Autonomy & Versatility","category":"soft-skills","proficiency":"expert","percentage":94,"yearsOfExperience":4}
+{"_type":"skill","_id":"skill-project-management","name":"Project & Deadline Management","category":"soft-skills","proficiency":"advanced","percentage":88,"yearsOfExperience":3}
+{"_type":"skill","_id":"skill-english","name":"Bilingual (English / French)","category":"soft-skills","proficiency":"advanced","percentage":85,"yearsOfExperience":5}
