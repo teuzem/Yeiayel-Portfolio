@@ -1,9 +1,11 @@
 [build]
-  command = "pnpm build"
+  command = "corepack enable && corepack prepare pnpm@11.25.0 --activate && pnpm install --frozen-lockfile && pnpm build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
+  COREPACK_ENABLE_STRICT = "0"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
