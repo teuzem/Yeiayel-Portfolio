@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "postbuild": "node scripts/prepare-standalone.mjs",
+    "start": "node .next/standalone/server.js",
     "lint": "biome check",
     "format": "biome format --write",
     "typegen": "sanity schema extract \u0026\u0026 sanity typegen generate"

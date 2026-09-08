@@ -1,18 +1,19 @@
 "use client";
 
-import { SignInButton, useUser } from "@clerk/nextjs";
 import { MessageSquare } from "lucide-react";
+import { useOptionalAuth } from "@/components/AuthProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { useSidebar } from "./ui/sidebar";
 
 function SidebarToggle() {
   const { toggleSidebar, open, isMobile, openMobile } = useSidebar();
-  const { isSignedIn } = useUser();
+  const { enabled, isSignedIn, openSignIn } = useOptionalAuth();
   const { dict } = useLocale();
 
   const isSidebarOpen = isMobile ? openMobile : open;
 
   if (isSidebarOpen) return null;
+  if (!enabled) return null;
 
   const buttonStyles = `relative w-16 h-16 rounded-full 
     bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 
@@ -36,26 +37,14 @@ function SidebarToggle() {
         <div className="absolute -bottom-1 right-6 w-2 h-2 rotate-45 bg-white/90 dark:bg-black/90 border-r border-b border-white/40 dark:border-white/20" />
       </div>
 
-      {isSignedIn ? (
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          className={buttonStyles}
-          aria-label={dict.chat.title}
-        >
-          <MessageSquare className="h-7 w-7 text-white transition-transform group-hover:scale-110" />
-        </button>
-      ) : (
-        <SignInButton mode="modal">
-          <button
-            type="button"
-            className={buttonStyles}
-            aria-label={dict.chat.signIn}
-          >
-            <MessageSquare className="h-7 w-7 text-white transition-transform group-hover:scale-110" />
-          </button>
-        </SignInButton>
-      )}
+      <button
+        type="button"
+        onClick={isSignedIn ? toggleSidebar : openSignIn}
+        className={buttonStyles}
+        aria-label={isSignedIn ? dict.chat.title : dict.chat.signIn}
+      >
+        <MessageSquare className="h-7 w-7 text-white transition-transform group-hover:scale-110" />
+      </button>
     </div>
   );
 }

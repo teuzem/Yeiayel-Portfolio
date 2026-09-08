@@ -39,6 +39,7 @@ export function LocaleSwitcher({ className = "" }: { className?: string }) {
                 onClick={() => {
                   setLocale(l);
                   try {
+                    // biome-ignore lint/suspicious/noDocumentCookie: synchronous fallback for browsers without Cookie Store API
                     document.cookie = `${LOCALE_COOKIE}=${l}; path=/; max-age=31536000; samesite=lax`;
                   } catch {
                     /* ignore */

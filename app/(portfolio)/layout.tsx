@@ -1,7 +1,7 @@
-import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
+import { AuthProvider } from "@/components/AuthProvider";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeToggle } from "@/components/DarkModeToggle";
 import { DisableDraftMode } from "@/components/DisableDraftMode";
@@ -25,7 +25,9 @@ export default async function PortfolioLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider>
+    <AuthProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    >
       <div
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -63,6 +65,6 @@ export default async function PortfolioLayout({
         </LocaleProvider>
         <PwaRegister />
       </div>
-    </ClerkProvider>
+    </AuthProvider>
   );
 }

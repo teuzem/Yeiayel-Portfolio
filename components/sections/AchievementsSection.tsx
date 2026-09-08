@@ -27,6 +27,7 @@ export async function AchievementsSection({
 }: {
   locale?: Locale;
 }) {
+  // biome-ignore lint/suspicious/noExplicitAny: generated Sanity result varies with the GROQ projection
   const { data: achievements } = await sanityFetch<any[]>({
     query: ACHIEVEMENTS_QUERY,
   });

@@ -21,6 +21,7 @@ const BLOG_QUERY = defineQuery(`*[_type == "blog"] | order(publishedAt desc){
 }`);
 
 export async function BlogSection({ locale = "en" }: { locale?: Locale }) {
+  // biome-ignore lint/suspicious/noExplicitAny: generated Sanity result varies with the GROQ projection
   const { data: posts } = await sanityFetch<any[]>({
     query: BLOG_QUERY,
   });

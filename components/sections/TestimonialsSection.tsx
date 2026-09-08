@@ -24,6 +24,7 @@ export async function TestimonialsSection({
 }: {
   locale?: Locale;
 }) {
+  // biome-ignore lint/suspicious/noExplicitAny: generated Sanity result varies with the GROQ projection
   const { data: testimonials } = await sanityFetch<any[]>({
     query: TESTIMONIALS_QUERY,
   });

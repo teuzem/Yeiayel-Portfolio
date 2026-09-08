@@ -35,6 +35,7 @@ const CATEGORY_LABELS: Record<string, { en: string; fr: string }> = {
 };
 
 export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
+  // biome-ignore lint/suspicious/noExplicitAny: generated Sanity result varies with the GROQ projection
   const { data: projects } = await sanityFetch<any[]>({
     query: PROJECTS_QUERY,
   });
@@ -121,6 +122,7 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
                     <div className="flex flex-wrap gap-1.5 @md/card:gap-2">
                       {project.technologies
                         .slice(0, 4)
+                        // biome-ignore lint/suspicious/noExplicitAny: Sanity reference projection is dynamic
                         .map((tech: any, idx: number) => {
                           const techData =
                             tech && typeof tech === "object" && "name" in tech

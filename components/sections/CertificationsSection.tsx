@@ -32,6 +32,7 @@ export async function CertificationsSection({
 }: {
   locale?: Locale;
 }) {
+  // biome-ignore lint/suspicious/noExplicitAny: generated Sanity result varies with the GROQ projection
   const { data: certifications } = await sanityFetch<any[]>({
     query: CERTIFICATIONS_QUERY,
   });

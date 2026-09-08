@@ -113,11 +113,7 @@ git clone <your-repo-url>
 cd next-gen-portfolio-sanity-nextjs-clerk
 
 # Install dependencies
-pnpm install
-# or
 npm install
-# or
-yarn install
 ```
 
 ### 2) Environment Variables
@@ -238,10 +234,6 @@ npm run typegen
 
 ```bash
 npm run dev
-# or
-pnpm dev
-# or
-yarn dev
 ```
 
 **🎉 Both apps will be running simultaneously:**

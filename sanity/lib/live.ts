@@ -8,6 +8,7 @@ import { client } from "./client";
  * client component graph. This project renders client components from server
  * sections, so a plain tagged fetch is the reliable production path.
  */
+// biome-ignore lint/suspicious/noExplicitAny: Sanity query result types vary by GROQ query
 export async function sanityFetch<T = any>({
   query,
   params,

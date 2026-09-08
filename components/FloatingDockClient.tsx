@@ -1,9 +1,9 @@
 "use client";
 
-import { useClerk, useUser } from "@clerk/nextjs";
 import { IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useOptionalAuth } from "@/components/AuthProvider";
 import { useLocale } from "@/components/LocaleProvider";
 import { DynamicIcon } from "./DynamicIcon";
 import { useSidebar } from "./ui/sidebar";
@@ -41,8 +41,7 @@ const getVisibleLinks = (links: DockLink[], maxItems: number) => {
 };
 
 export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
-  const { isSignedIn } = useUser();
-  const { signOut } = useClerk();
+  const { enabled, isSignedIn, signOut } = useOptionalAuth();
   const { dict, locale: uiLocale } = useLocale();
   const { open, isMobile, openMobile } = useSidebar();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -59,7 +58,7 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
       icon: <DynamicIcon iconName={item.icon || "IconHome"} />,
       isExternal: item.isExternal,
     })),
-    ...(isSignedIn && !isSidebarOpen
+    ...(enabled && isSignedIn && !isSidebarOpen
       ? [
           {
             title: dict.nav.signOut,

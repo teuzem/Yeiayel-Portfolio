@@ -1,9 +1,9 @@
 "use client";
 
-import { useClerk, useUser } from "@clerk/nextjs";
 import { MessageCircle, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { useOptionalAuth } from "@/components/AuthProvider";
 import { useLocale } from "../LocaleProvider";
 import { useSidebar } from "../ui/sidebar";
 
@@ -20,12 +20,11 @@ export function ProfileImage({
 }: ProfileImageProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { toggleSidebar, open } = useSidebar();
-  const { isLoaded, isSignedIn } = useUser();
-  const { openSignIn } = useClerk();
+  const { enabled, isLoaded, isSignedIn, openSignIn } = useOptionalAuth();
   const { dict } = useLocale();
 
   const handleClick = () => {
-    if (!isLoaded) return;
+    if (!enabled || !isLoaded) return;
     if (isSignedIn) {
       toggleSidebar();
     } else {
