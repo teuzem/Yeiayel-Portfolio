@@ -1,11 +1,12 @@
 [build]
-  command = "corepack enable && corepack prepare pnpm@11.25.0 --activate && pnpm install --frozen-lockfile && pnpm build"
+  command = "npm install --legacy-peer-deps --no-audit --no-fund && npm run build"
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "20"
-  COREPACK_ENABLE_STRICT = "0"
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--no-audit --no-fund"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
 
