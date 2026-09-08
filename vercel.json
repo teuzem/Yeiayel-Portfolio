@@ -1,7 +1,6 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm install --legacy-peer-deps --no-audit --no-fund && npm run build",
-  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund"
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci --no-audit --no-fund"
 }
-
