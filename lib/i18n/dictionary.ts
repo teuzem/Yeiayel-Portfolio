@@ -187,7 +187,6 @@ export const dict = {
       assistant: "Assistant",
       you: "You",
       thinking: "Thinking...",
-      replyLanguage: "Reply language",
       retry: "Retry",
       clearHistory: "Clear conversation",
       memoryNotice:
@@ -481,7 +480,6 @@ export const dict = {
       assistant: "Assistant",
       you: "Vous",
       thinking: "Réflexion...",
-      replyLanguage: "Langue de réponse",
       retry: "Réessayer",
       clearHistory: "Effacer la conversation",
       memoryNotice:

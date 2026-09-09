@@ -43,13 +43,9 @@ export default async function PortfolioLayout({
                 <AppSidebar side="right" />
                 <FloatingDock />
                 <SidebarToggle />
-                <div className="fixed md:bottom-6 md:right-40 top-4 right-16 md:top-auto md:left-auto z-30 w-16">
+                <div className="fixed right-4 top-4 z-40 flex items-center gap-2 md:bottom-6 md:right-24 md:top-auto">
                   <LocaleSwitcher />
-                </div>
-                <div className="fixed md:bottom-6 md:right-24 top-4 right-18 md:top-auto md:left-auto z-20">
-                  <div className="w-10 h-10 md:w-12 md:h-12">
-                    <ModeToggle />
-                  </div>
+                  <ModeToggle />
                 </div>
               </SidebarProvider>
               <SanityLive />

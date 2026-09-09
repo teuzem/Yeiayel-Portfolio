@@ -18,7 +18,6 @@ import {
 import { chatWithTwin, type TwinChatResponse } from "@/app/actions/twin-chat";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 import { useLocale } from "@/components/LocaleProvider";
-import { localeName } from "@/lib/i18n";
 import type { TwinProfile } from "@/lib/twin";
 import { cn } from "@/lib/utils";
 
@@ -316,9 +315,6 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
             {dict.chat.availableOnline}
           </p>
         </div>
-        <span className="shrink-0 rounded-md border border-border/60 bg-muted/40 px-2 py-1 text-[10px] font-medium text-muted-foreground">
-          {dict.chat.replyLanguage}: {localeName[locale]}
-        </span>
         {turns.length ? (
           <button
             type="button"

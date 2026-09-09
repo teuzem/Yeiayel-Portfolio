@@ -1,45 +1,55 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-
+import { useEffect, useState } from "react";
 import { useLocale } from "@/components/LocaleProvider";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
-export function ModeToggle() {
-  const { setTheme } = useTheme();
+const THEME_OPTIONS = [
+  { value: "light", icon: Sun, labelKey: "light" },
+  { value: "dark", icon: Moon, labelKey: "dark" },
+  { value: "system", icon: Monitor, labelKey: "system" },
+] as const;
+
+export function ModeToggle({ className = "" }: { className?: string }) {
+  const { theme, setTheme } = useTheme();
   const { dict } = useLocale();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          suppressHydrationWarning
-          className="w-full h-full rounded-full bg-white/20 dark:bg-black/30 hover:bg-white/30 dark:hover:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/20 hover:border-white/40 dark:hover:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex items-center justify-center text-neutral-500 dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all duration-300 hover:scale-110"
-          aria-label={dict.theme.toggle}
-        >
-          <Sun className="h-5 w-5 md:h-6 md:w-6 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-5 w-5 md:h-6 md:w-6 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-          <span className="sr-only">{dict.theme.toggle}</span>
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          {dict.theme.light}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          {dict.theme.dark}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          {dict.theme.system}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <fieldset
+      className={cn(
+        "flex h-11 items-center gap-1 rounded-lg border border-border/70 bg-background/90 p-1 shadow-lg backdrop-blur-xl",
+        className,
+      )}
+    >
+      <legend className="sr-only">{dict.theme.toggle}</legend>
+      {THEME_OPTIONS.map(({ value, icon: Icon, labelKey }) => {
+        const active = mounted && theme === value;
+        const label = dict.theme[labelKey];
+        return (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setTheme(value)}
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+              active
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+            aria-pressed={active}
+            aria-label={label}
+            title={label}
+            suppressHydrationWarning
+          >
+            <Icon className="h-4 w-4" aria-hidden="true" />
+          </button>
+        );
+      })}
+    </fieldset>
   );
 }

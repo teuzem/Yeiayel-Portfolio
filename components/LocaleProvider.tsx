@@ -24,6 +24,21 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 const STORAGE_KEY = "portfolio-locale";
 
+function persistLocale(locale: Locale) {
+  document.documentElement.lang = locale;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, locale);
+  } catch {
+    // Live locale state still works when storage is unavailable.
+  }
+  try {
+    // biome-ignore lint/suspicious/noDocumentCookie: required fallback for broad browser support.
+    document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax`;
+  } catch {
+    // The document language and client state remain authoritative.
+  }
+}
+
 function detectInitialLocale(): Locale {
   if (typeof window === "undefined") return defaultLocale;
   // Prefer the cookie the server used to render, so hydration matches.
@@ -42,26 +57,20 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(defaultLocale);
 
   useEffect(() => {
-    setLocaleState(detectInitialLocale());
+    const initialLocale = detectInitialLocale();
+    setLocaleState(initialLocale);
+    persistLocale(initialLocale);
   }, []);
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      /* ignore */
-    }
+    persistLocale(next);
   }, []);
 
   const toggleLocale = useCallback(() => {
     setLocaleState((prev) => {
       const next = prev === "en" ? "fr" : "en";
-      try {
-        window.localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        /* ignore */
-      }
+      persistLocale(next);
       return next;
     });
   }, []);

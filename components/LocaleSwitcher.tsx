@@ -1,61 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { Languages } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
-import { LOCALE_COOKIE, type Locale, localeName } from "@/lib/i18n";
+import { type Locale, localeName } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
-const SUPPORTED: Locale[] = ["en", "fr"];
+const LANGUAGE_OPTIONS: Array<{
+  locale: Locale;
+  code: string;
+  symbol: string;
+}> = [
+  { locale: "en", code: "EN", symbol: "🇬🇧" },
+  { locale: "fr", code: "FR", symbol: "🇫🇷" },
+];
 
 export function LocaleSwitcher({ className = "" }: { className?: string }) {
   const { locale, setLocale, dict } = useLocale();
-  const [open, setOpen] = useState(false);
+
+  const selectLocale = (nextLocale: Locale) => {
+    if (nextLocale === locale) return;
+    setLocale(nextLocale);
+  };
 
   return (
-    <div className={`relative ${className}`}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 w-full h-10 px-3 rounded-lg border bg-background hover:bg-accent transition-colors text-sm font-medium justify-center"
-        aria-label={dict.nav.changeLanguage}
-      >
-        <span aria-hidden className="text-xs font-bold">
-          {locale.toUpperCase()}
-        </span>
-      </button>
-
-      {open && (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-40 cursor-default"
-            onClick={() => setOpen(false)}
-            aria-label={dict.nav.closeMenu}
-          />
-          <div className="absolute right-0 top-12 z-50 w-40 rounded-lg border bg-popover shadow-lg overflow-hidden">
-            {SUPPORTED.map((l) => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => {
-                  setLocale(l);
-                  try {
-                    // biome-ignore lint/suspicious/noDocumentCookie: synchronous fallback for browsers without Cookie Store API
-                    document.cookie = `${LOCALE_COOKIE}=${l}; path=/; max-age=31536000; samesite=lax`;
-                  } catch {
-                    /* ignore */
-                  }
-                  setOpen(false);
-                }}
-                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-accent transition-colors flex items-center gap-2 ${
-                  l === locale ? "text-primary font-medium" : ""
-                }`}
-              >
-                {localeName[l]}
-              </button>
-            ))}
-          </div>
-        </>
+    <fieldset
+      className={cn(
+        "flex h-11 items-center gap-1 rounded-lg border border-border/70 bg-background/90 p-1 shadow-lg backdrop-blur-xl",
+        className,
       )}
-    </div>
+    >
+      <legend className="sr-only">{dict.nav.changeLanguage}</legend>
+      <Languages
+        className="mx-1 h-4 w-4 shrink-0 text-muted-foreground"
+        aria-hidden="true"
+      />
+      {LANGUAGE_OPTIONS.map((option) => {
+        const active = option.locale === locale;
+        return (
+          <button
+            key={option.locale}
+            type="button"
+            onClick={() => selectLocale(option.locale)}
+            className={cn(
+              "relative flex h-8 min-w-12 items-center justify-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors",
+              active
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+            aria-pressed={active}
+            aria-label={localeName[option.locale]}
+            title={localeName[option.locale]}
+            lang={option.locale}
+          >
+            <span className="text-base leading-none" aria-hidden="true">
+              {option.symbol}
+            </span>
+            <span>{option.code}</span>
+          </button>
+        );
+      })}
+    </fieldset>
   );
 }
