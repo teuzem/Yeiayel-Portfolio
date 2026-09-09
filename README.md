@@ -60,6 +60,14 @@ Create an OpenAI account at [OpenAI](https://openai.com) to power your AI Twin
 - **Suggested Prompts**: Pre-built conversation starters to guide visitor interactions
 - **Real-Time Streaming**: Responses stream in naturally like a real conversation
 - **Always Available**: Your AI Twin engages visitors 24/7, even when you're sleeping or busy
+- **Native English and French**: The selected interface language controls the
+  complete chat UI, knowledge context, and every generated response.
+- **Conversation Memory**: Separate English and French histories are retained
+  on the visitor's device and restored when the chat is reopened.
+- **Response Feedback**: Visitors can rate each answer; feedback is recorded
+  locally and persisted to Sanity when the server write token is configured.
+- **Provider Failover**: OpenAI is used first, then OpenRouter, followed by a
+  portfolio-grounded local response if remote providers are unavailable.
 
 ### Dual App Architecture - Two Apps in One Repo
 
@@ -135,6 +143,10 @@ SANITY_STUDIO_PREVIEW_ORIGIN=http://localhost:3000
 
 # OpenAI for AI Chat
 OPENAI_API_KEY=sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890AbCdEfGhIjKlMnOpQrStUvWxYz
+OPENAI_CHAT_MODEL=gpt-5-mini
+OPENROUTER_API_KEY=sk-or-YOUR_OPENROUTER_API_KEY
+OPENROUTER_CHAT_MODEL=openrouter/auto
+TWIN_CHAT_TIMEOUT_MS=28000
 ```
 
 **Important Notes:**
@@ -143,7 +155,11 @@ OPENAI_API_KEY=sk-proj-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890AbCdEfGhIjKlMnOpQrStU
 - **CLERK_SECRET_KEY**: Found in Clerk Dashboard → API Keys (starts with `sk_test_` or `sk_live_`) - **Never expose this publicly!**
 - **NEXT_PUBLIC_SANITY_PROJECT_ID**: Found in Sanity project settings (8-character alphanumeric ID)
 - **NEXT_PUBLIC_SANITY_DATASET**: Usually `production` or `development` - matches your Sanity dataset name
-- **OPENAI_API_KEY**: Found in OpenAI Dashboard → API Keys (starts with `sk-proj-` or `sk-`)
+- **OPENAI_API_KEY**: Primary AI Twin provider key from the OpenAI dashboard.
+- **OPENAI_CHAT_MODEL**: Optional OpenAI model override. Defaults to `gpt-5-mini`.
+- **OPENROUTER_API_KEY**: Secondary provider used automatically if OpenAI is unavailable.
+- **OPENROUTER_CHAT_MODEL**: Optional OpenRouter model override. Defaults to `openrouter/auto`.
+- **TWIN_CHAT_TIMEOUT_MS**: Total failover budget, clamped between 10 and 55 seconds.
 
 > **Security:** The `NEXT_PUBLIC_` prefix makes these variables available in client-side code. Only use this prefix for non-sensitive data like project IDs and publishable keys. Never prefix secret keys with `NEXT_PUBLIC_`!
 
@@ -226,7 +242,8 @@ npm run typegen
    - Navigate to [API Keys](https://platform.openai.com/api-keys)
    - Create a new API key
    - Add to `.env.local` as `OPENAI_API_KEY`
-3. Ensure you have access to **GPT-4o** model or modify the chat configuration for other models
+3. Set `OPENAI_CHAT_MODEL` when you want to override the default production model.
+4. Add `OPENROUTER_API_KEY` for automatic provider failover.
 
 ### 6) Run Both Apps
 

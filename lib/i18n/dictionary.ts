@@ -187,10 +187,20 @@ export const dict = {
       assistant: "Assistant",
       you: "You",
       thinking: "Thinking...",
+      replyLanguage: "Reply language",
+      retry: "Retry",
+      clearHistory: "Clear conversation",
+      memoryNotice:
+        "Memory is saved on this device for this language. You can clear it at any time.",
+      wasHelpful: "Helpful?",
+      helpful: "Helpful",
+      notHelpful: "Not helpful",
+      feedbackThanks: "Feedback saved",
+      connectionError:
+        "The conversation request was interrupted before I could answer. Retry this question.",
       fallbackNotice:
         "Maintaining service on a fallback model — replies may be simplified.",
-      fallbackError:
-        "Sorry, I couldn't reach my assistant right now. Please try again in a moment.",
+      fallbackError: "I could not complete this response.",
     },
     pricing: {
       local: "Local (Africa)",
@@ -471,10 +481,20 @@ export const dict = {
       assistant: "Assistant",
       you: "Vous",
       thinking: "Réflexion...",
+      replyLanguage: "Langue de réponse",
+      retry: "Réessayer",
+      clearHistory: "Effacer la conversation",
+      memoryNotice:
+        "La mémoire est enregistrée sur cet appareil pour cette langue. Vous pouvez l'effacer à tout moment.",
+      wasHelpful: "Utile ?",
+      helpful: "Utile",
+      notHelpful: "Pas utile",
+      feedbackThanks: "Retour enregistré",
+      connectionError:
+        "La requête de conversation a été interrompue avant ma réponse. Relancez cette question.",
       fallbackNotice:
         "Service maintenu sur un modèle de secours — les réponses peuvent être simplifiées.",
-      fallbackError:
-        "Désolé, je n'ai pas pu joindre mon assistant pour le moment. Veuillez réessayer dans un instant.",
+      fallbackError: "Je n'ai pas pu terminer cette réponse.",
     },
     pricing: {
       local: "Local (Afrique)",

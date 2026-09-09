@@ -1,277 +1,356 @@
+import "server-only";
+
 import { defineQuery } from "next-sanity";
-import type { TwinContext } from "@/lib/twin";
+import {
+  EMPTY_CONTEXT,
+  normalizeProfile,
+  type TwinContext,
+  type TwinLocale,
+  type TwinProfile,
+} from "@/lib/twin";
 import { sanityFetch } from "@/sanity/lib/live";
 
 const PROFILE_QUERY = defineQuery(`*[_id == "singleton-profile"][0]{
-  firstName, lastName, headline, shortBio, location, availability,
-  yearsOfExperience, email, phone
+  firstName, lastName, headline, headlineFr, shortBio, shortBioFr, location,
+  availability, yearsOfExperience, email, phone
 }`);
 
 const EXPERIENCE_QUERY =
-  defineQuery(`*[_type == "experience"] | order(startDate desc){
-  company, position, location, startDate, endDate, current,
-  description, responsibilities, achievements
+  defineQuery(`*[_type == "experience"] | order(startDate desc)[0...20]{
+  company, position, positionFr, location, startDate, endDate, current,
+  description, descriptionFr, responsibilities, responsibilitiesFr,
+  achievements, achievementsFr
 }`);
 
 const PROJECTS_QUERY =
-  defineQuery(`*[_type == "project"] | order(_createdAt desc){
-  title, tagline, technologies[]->{name}, liveUrl, githubUrl, category, featured
+  defineQuery(`*[_type == "project"] | order(featured desc, _createdAt desc)[0...24]{
+  title, titleFr, tagline, taglineFr, technologies[]->{name}, liveUrl,
+  githubUrl, category, featured
 }`);
 
 const SKILLS_QUERY =
-  defineQuery(`*[_type == "skill"] | order(proficiency desc, category asc){
+  defineQuery(`*[_type == "skill"] | order(proficiency desc, category asc)[0...80]{
   name, category, proficiency, yearsOfExperience
 }`);
 
 const EDUCATION_QUERY =
-  defineQuery(`*[_type == "education"] | order(endDate desc){
-  institution, degree, degreeFr, fieldOfStudy, fieldOfStudyFr, startDate, endDate, description, descriptionFr, gpa
+  defineQuery(`*[_type == "education"] | order(endDate desc)[0...12]{
+  institution, degree, degreeFr, fieldOfStudy, fieldOfStudyFr, startDate,
+  endDate, description, descriptionFr, gpa
 }`);
 
 const CERTIFICATIONS_QUERY =
-  defineQuery(`*[_type == "certification"] | order(issueDate desc){
-  name, issuer, issueDate, expiryDate, description
+  defineQuery(`*[_type == "certification"] | order(issueDate desc)[0...20]{
+  name, nameFr, issuer, issueDate, expiryDate, description, descriptionFr
 }`);
 
 const ACHIEVEMENTS_QUERY =
-  defineQuery(`*[_type == "achievement"] | order(date desc){
-  title, description, date, category
+  defineQuery(`*[_type == "achievement"] | order(date desc)[0...20]{
+  title, titleFr, description, descriptionFr, date, category
 }`);
 
-const BLOG_QUERY = defineQuery(`*[_type == "blog"] | order(publishedAt desc){
-  title, excerpt, publishedAt, category, tags
+const BLOG_QUERY =
+  defineQuery(`*[_type == "blog"] | order(publishedAt desc)[0...20]{
+  title, titleFr, excerpt, excerptFr, publishedAt, category, tags
 }`);
 
-const SERVICES_QUERY = defineQuery(`*[_type == "service"] | order(order asc){
-  title, shortDescription, pricing, internationalPrice, localPrice, timeline
+const SERVICES_QUERY =
+  defineQuery(`*[_type == "service"] | order(order asc)[0...20]{
+  title, titleFr, shortDescription, shortDescriptionFr, pricing,
+  internationalPrice, internationalCurrency, localPrice, localCurrency,
+  timeline
 }`);
 
-/** Render a Sanity description (Portable Text or plain text) to readable text. */
-// biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
+const SECTION_LIMIT = 4_500;
+
+// biome-ignore lint/suspicious/noExplicitAny: Sanity documents have schema-dependent fields.
+type SanityDocument = Record<string, any>;
+
+// biome-ignore lint/suspicious/noExplicitAny: Sanity documents are dynamic at runtime.
 function textOf(value: any): string {
   if (!value) return "";
-  if (typeof value === "string") return value;
-  if (Array.isArray(value)) {
-    return value
-      .map((block) => {
-        if (typeof block === "string") return block;
-        const children = block?.children;
-        if (Array.isArray(children)) {
-          return children
-            .map((c) => (c && typeof c.text === "string" ? c.text : ""))
-            .join("");
-        }
-        return block?.text ?? "";
-      })
-      .filter(Boolean)
-      .join(" ");
-  }
-  return "";
+  if (typeof value === "string") return value.trim();
+  if (!Array.isArray(value)) return "";
+
+  return value
+    .map((block) => {
+      if (typeof block === "string") return block;
+      if (Array.isArray(block?.children)) {
+        return block.children
+          .map((child: { text?: unknown }) =>
+            typeof child?.text === "string" ? child.text : "",
+          )
+          .join("");
+      }
+      return typeof block?.text === "string" ? block.text : "";
+    })
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 }
 
-function lines(heading: string, rows: string[]): string {
-  const clean = rows.filter(Boolean);
-  return clean.length ? `${heading}:\n${clean.join("\n")}` : "";
+function localized(
+  english: unknown,
+  french: unknown,
+  locale: TwinLocale,
+): string {
+  const preferred = locale === "fr" ? french : english;
+  const alternate = locale === "fr" ? english : french;
+  return textOf(preferred) || textOf(alternate);
 }
 
-function listOf(
-  items: Array<string | undefined | null> | null | undefined,
-): string[] {
-  return (items ?? []).filter((s): s is string => Boolean(s));
+function clip(value: string): string {
+  if (value.length <= SECTION_LIMIT) return value;
+  return `${value.slice(0, SECTION_LIMIT).trimEnd()}\n[Additional entries omitted]`;
+}
+
+function section(rows: string[]): string {
+  return clip(rows.filter(Boolean).join("\n\n"));
+}
+
+function stringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is string =>
+      typeof item === "string" && item.trim().length > 0,
+  );
+}
+
+async function fetchOne(query: string) {
+  const { data } = await sanityFetch<unknown>({ query });
+  return data;
+}
+
+async function fetchMany(query: string) {
+  const data = await fetchOne(query);
+  return Array.isArray(data) ? data : [];
+}
+
+export interface TwinKnowledge {
+  context: TwinContext;
+  profile: TwinProfile | null;
 }
 
 /**
- * Fetch and summarize all portfolio content from Sanity into a context blob
- * the LLM can reference. Server-only.
+ * Loads the complete AI Twin knowledge base in parallel. Every localized field
+ * prefers the selected UI language and falls back only to the other CMS field.
  */
-export async function buildTwinContextFromSanity(): Promise<TwinContext> {
-  const empty: TwinContext = {
-    experience: "",
-    projects: "",
-    skills: "",
-    education: "",
-    certifications: "",
-    achievements: "",
-    blog: "",
-    services: "",
+export async function buildTwinKnowledgeFromSanity(
+  locale: TwinLocale,
+): Promise<TwinKnowledge> {
+  const [
+    profileDocument,
+    experience,
+    projects,
+    skills,
+    education,
+    certifications,
+    achievements,
+    blog,
+    services,
+  ] = await Promise.all([
+    fetchOne(PROFILE_QUERY),
+    fetchMany(EXPERIENCE_QUERY),
+    fetchMany(PROJECTS_QUERY),
+    fetchMany(SKILLS_QUERY),
+    fetchMany(EDUCATION_QUERY),
+    fetchMany(CERTIFICATIONS_QUERY),
+    fetchMany(ACHIEVEMENTS_QUERY),
+    fetchMany(BLOG_QUERY),
+    fetchMany(SERVICES_QUERY),
+  ]);
+
+  const rawProfile = (profileDocument || {}) as SanityDocument;
+  const profile = normalizeProfile({
+    ...rawProfile,
+    headline: localized(rawProfile.headline, rawProfile.headlineFr, locale),
+    shortBio: localized(rawProfile.shortBio, rawProfile.shortBioFr, locale),
+  });
+  const context: TwinContext = {
+    ...EMPTY_CONTEXT,
+    sources: [
+      "LinkedIn: https://www.linkedin.com/in/yeiayelngoumtsop",
+      "Saint Jean Ingenieur: https://saintjeaningenieur.org",
+      "Pryemo: https://pryemo.com",
+      "Go2skul Study Abroad: https://go2skul.com",
+      "Go2skul Education Group: https://go2skuleducation.com",
+      "Go2skul Institut: https://institutgo2skul.com",
+      "Admission Desk: https://admissiondesk.online",
+      "Batir Le Pays SARL: https://batirlepays.com",
+      "Batir Le Pays portfolio: https://portfolio.batirlepays.com",
+      "IFP UBS: https://ifpubs.com",
+      "Lead Higher Institute: https://luciduniversity.org",
+      "IUSTE: https://univ-stee.com",
+    ],
   };
 
-  const run = async <T>(query: string): Promise<T[]> => {
-    try {
-      const { data } = await sanityFetch({ query });
-      // biome-ignore lint/suspicious/noExplicitAny: shape unknown at runtime
-      return (data as any) ?? [];
-    } catch {
-      return [];
-    }
-  };
+  context.experience = section(
+    (experience as SanityDocument[]).map((item) => {
+      const responsibilities = stringList(
+        locale === "fr"
+          ? item.responsibilitiesFr || item.responsibilities
+          : item.responsibilities || item.responsibilitiesFr,
+      );
+      const achievementsList = stringList(
+        locale === "fr"
+          ? item.achievementsFr || item.achievements
+          : item.achievements || item.achievementsFr,
+      );
+      const dateRange = `${item.startDate || "?"} - ${
+        item.current
+          ? locale === "fr"
+            ? "aujourd'hui"
+            : "present"
+          : item.endDate || "?"
+      }`;
+      const organizationLabel = locale === "fr" ? "chez" : "at";
+      return [
+        `${localized(item.position, item.positionFr, locale)} ${organizationLabel} ${item.company} (${dateRange})`,
+        item.location || "",
+        localized(item.description, item.descriptionFr, locale),
+        ...responsibilities.slice(0, 6).map((value) => `- ${value}`),
+        ...achievementsList.slice(0, 6).map((value) => `- ${value}`),
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }),
+  );
 
-  const context: TwinContext = { ...empty };
+  context.projects = section(
+    (projects as SanityDocument[]).map((item) => {
+      const technologies = Array.isArray(item.technologies)
+        ? item.technologies
+            .map((technology: { name?: unknown }) =>
+              typeof technology?.name === "string" ? technology.name : "",
+            )
+            .filter(Boolean)
+            .join(", ")
+        : "";
+      return [
+        localized(item.title, item.titleFr, locale),
+        localized(item.tagline, item.taglineFr, locale),
+        technologies
+          ? `${locale === "fr" ? "Technologies" : "Technologies"}: ${technologies}`
+          : "",
+        item.liveUrl
+          ? `${locale === "fr" ? "Site" : "Live"}: ${item.liveUrl}`
+          : "",
+        item.githubUrl ? `GitHub: ${item.githubUrl}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }),
+  );
 
-  context.sources = [
-    "LinkedIn: https://www.linkedin.com/in/yeiayelngoumtsop",
-    "Saint Jean Ingénieur (école, formation en Data Science): https://saintjeaningenieur.org",
-    "Pryemo (startup web & services): https://pryemo.com",
-    "Go2skul Study Abroad: https://go2skul.com",
-    "Go2skul Education Group: https://go2skuleducation.com",
-    "Go2skul Institut (formation): https://institutgo2skul.com",
-    "Admission Desk (app de recrutement étudiants): https://admissiondesk.online",
-    "Bâtir Le Pays SARL (site officiel): https://batirlepays.com",
-    "Bâtir Le Pays — Portfolio BTP & formations: https://portfolio.batirlepays.com",
-    "IFP UBS (Institut de Formation Professionnelle): https://ifpubs.com",
-    "Lead Higher Institute: https://luciduniversity.org",
-    "TEST SARL (Texaco Omnisport, Yaoundé)",
-    "IUSTE (Institut Universitaire des Sciences, des Technologies et de l'Ethique): https://univ-stee.com",
-  ];
+  const groupedSkills = new Map<string, string[]>();
+  for (const item of skills as SanityDocument[]) {
+    const category =
+      typeof item.category === "string" ? item.category : "other";
+    const name = typeof item.name === "string" ? item.name : "";
+    if (!name) continue;
+    const details = [
+      name,
+      typeof item.proficiency === "number" ? `${item.proficiency}%` : "",
+      typeof item.yearsOfExperience === "number"
+        ? `${item.yearsOfExperience} ${locale === "fr" ? "ans" : "years"}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" - ");
+    groupedSkills.set(category, [
+      ...(groupedSkills.get(category) || []),
+      details,
+    ]);
+  }
+  context.skills = clip(
+    [...groupedSkills.entries()]
+      .map(([category, names]) => `${category}: ${names.join(", ")}`)
+      .join("\n"),
+  );
 
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
-    const exp: any[] = await run(EXPERIENCE_QUERY);
-    context.experience = lines(
-      "Work experience",
-      exp.map((e) =>
-        [
-          `${e.position} @ ${e.company} (${e.current ? "present" : (e.endDate ?? "")})`,
-          textOf(e.description),
-          ...listOf(e.responsibilities)
-            .slice(0, 5)
-            .map((r) => `- ${r}`),
-          ...listOf(e.achievements)
-            .slice(0, 5)
-            .map((a) => `- ${a}`),
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      ),
-    );
-  } catch {
-    /* ignore */
-  }
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
-    const proj: any[] = await run(PROJECTS_QUERY);
-    context.projects = lines(
-      "Projects",
-      proj.map((p) =>
-        [
-          `${p.title}${p.category ? ` (${p.category})` : ""}`,
-          p.tagline ?? "",
-          p.technologies?.length
-            ? `Tech: ${(p.technologies as Array<{ name?: string }>)
-                .map((t) => t?.name ?? "")
-                .filter(Boolean)
-                .join(", ")}`
-            : "",
-          p.liveUrl ? `Live: ${p.liveUrl}` : "",
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      ),
-    );
-  } catch {
-    /* ignore */
-  }
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
-    const skills: any[] = await run(SKILLS_QUERY);
-    const grouped = new Map<string, string[]>();
-    for (const s of skills) {
-      const cat = s.category ?? "other";
-      if (!grouped.has(cat)) grouped.set(cat, []);
-      grouped.get(cat)?.push(s.name);
-    }
-    context.skills = [...grouped.entries()]
-      .map(([cat, names]) => `${cat}: ${names.join(", ")}`)
-      .join("\n");
-  } catch {
-    /* ignore */
-  }
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
-    const edu: any[] = await run(EDUCATION_QUERY);
-    context.education = lines(
-      "Education",
-      edu.map((e) =>
-        [
-          `${e.degree ?? e.degreeFr} in ${e.fieldOfStudy ?? e.fieldOfStudyFr} @ ${e.institution} (${e.startDate ?? ""}-${e.endDate ?? ""})`,
-          e.description ?? e.descriptionFr,
-          e.gpa ? `GPA: ${e.gpa}` : "",
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      ),
-    );
-  } catch {
-    /* ignore */
-  }
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
-    const certs: any[] = await run(CERTIFICATIONS_QUERY);
-    context.certifications = lines(
-      "Certifications",
-      certs.map((c) => `${c.name} — ${c.issuer} (${c.issueDate ?? ""})`.trim()),
-    );
-  } catch {
-    /* ignore */
-  }
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
-    const ach: any[] = await run(ACHIEVEMENTS_QUERY);
-    context.achievements = lines(
-      "Achievements",
-      ach.map((a) =>
-        [
-          `${a.title}${a.category ? ` (${a.category})` : ""}`,
-          textOf(a.description),
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      ),
-    );
-  } catch {
-    /* ignore */
-  }
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
-    const blog: any[] = await run(BLOG_QUERY);
-    context.blog = lines(
-      "Writing / Blog",
-      blog.map((b) =>
-        [
-          b.title,
-          b.excerpt ?? "",
-          b.category ? `Topic: ${b.category}` : "",
-          b.tags?.length ? `Tags: ${b.tags.join(", ")}` : "",
-          b.publishedAt ? `Published: ${b.publishedAt}` : "",
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      ),
-    );
-  } catch {
-    /* ignore */
-  }
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: Sanity dynamic content
-    const services: any[] = await run(SERVICES_QUERY);
-    context.services = lines(
-      "Services",
-      services.map((s) =>
-        [
-          s.title,
-          s.shortDescription ?? "",
-          s.internationalPrice ? `from ${s.internationalPrice}` : "",
-          s.timeline ? `Timeline: ${s.timeline}` : "",
-        ]
-          .filter(Boolean)
-          .join(" • "),
-      ),
-    );
-  } catch {
-    /* ignore */
-  }
+  context.education = section(
+    (education as SanityDocument[]).map((item) =>
+      [
+        `${localized(item.degree, item.degreeFr, locale)} - ${localized(
+          item.fieldOfStudy,
+          item.fieldOfStudyFr,
+          locale,
+        )} ${locale === "fr" ? "à" : "at"} ${item.institution}`,
+        `${item.startDate || "?"} - ${item.endDate || "?"}`,
+        localized(item.description, item.descriptionFr, locale),
+        item.gpa ? `GPA: ${item.gpa}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    ),
+  );
 
-  return context;
+  context.certifications = section(
+    (certifications as SanityDocument[]).map((item) =>
+      [
+        `${localized(item.name, item.nameFr, locale)} - ${item.issuer || ""}`,
+        item.issueDate || "",
+        localized(item.description, item.descriptionFr, locale),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    ),
+  );
+
+  context.achievements = section(
+    (achievements as SanityDocument[]).map((item) =>
+      [
+        localized(item.title, item.titleFr, locale),
+        item.date || "",
+        localized(item.description, item.descriptionFr, locale),
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    ),
+  );
+
+  context.blog = section(
+    (blog as SanityDocument[]).map((item) =>
+      [
+        localized(item.title, item.titleFr, locale),
+        localized(item.excerpt, item.excerptFr, locale),
+        item.publishedAt
+          ? `${locale === "fr" ? "Publié" : "Published"}: ${item.publishedAt}`
+          : "",
+        Array.isArray(item.tags) ? `Tags: ${item.tags.join(", ")}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    ),
+  );
+
+  context.services = section(
+    (services as SanityDocument[]).map((item) =>
+      [
+        localized(item.title, item.titleFr, locale),
+        localized(item.shortDescription, item.shortDescriptionFr, locale),
+        item.internationalPrice
+          ? `${locale === "fr" ? "International" : "International"}: ${item.internationalPrice} ${item.internationalCurrency || "USD"}`
+          : "",
+        item.localPrice
+          ? `${locale === "fr" ? "Local" : "Local"}: ${item.localPrice} ${item.localCurrency || "XAF"}`
+          : "",
+        item.timeline
+          ? `${locale === "fr" ? "Délai" : "Timeline"}: ${item.timeline}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    ),
+  );
+
+  return { context, profile };
+}
+
+export async function buildTwinContextFromSanity(
+  locale: TwinLocale = "en",
+): Promise<TwinContext> {
+  return (await buildTwinKnowledgeFromSanity(locale)).context;
 }
 
 export { PROFILE_QUERY };

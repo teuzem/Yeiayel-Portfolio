@@ -1,23 +1,88 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Send, User } from "lucide-react";
+import {
+  RotateCcw,
+  Send,
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  submitTwinFeedback,
+  type TwinFeedbackInput,
+} from "@/app/actions/submit-twin-feedback";
 import { chatWithTwin, type TwinChatResponse } from "@/app/actions/twin-chat";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 import { useLocale } from "@/components/LocaleProvider";
+import { localeName } from "@/lib/i18n";
 import type { TwinProfile } from "@/lib/twin";
 import { cn } from "@/lib/utils";
 
 interface ChatTurn {
+  id: string;
   role: "user" | "assistant";
   content: string;
   error?: boolean;
-  fallback?: boolean;
+  source?: TwinChatResponse["source"];
+  model?: string;
+  feedback?: TwinFeedbackInput["rating"];
 }
 
 const QUICK_PROMPTS = ["experience", "skills", "built", "whoAreYou"] as const;
+const MEMORY_PREFIX = "yeiayel-ai-twin-history-v2";
+const MAX_STORED_TURNS = 40;
+
+function createTurnId(role: ChatTurn["role"]): string {
+  return `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function memoryKey(locale: "en" | "fr"): string {
+  return `${MEMORY_PREFIX}-${locale}`;
+}
+
+function readStoredTurns(locale: "en" | "fr"): ChatTurn[] {
+  try {
+    const value = window.localStorage.getItem(memoryKey(locale));
+    if (!value) return [];
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .slice(-MAX_STORED_TURNS)
+      .filter((turn): turn is ChatTurn =>
+        Boolean(
+          turn &&
+            typeof turn === "object" &&
+            typeof turn.id === "string" &&
+            (turn.role === "user" || turn.role === "assistant") &&
+            typeof turn.content === "string",
+        ),
+      )
+      .map((turn) => ({
+        ...turn,
+        content: turn.content.slice(0, 8_000),
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function storeTurns(locale: "en" | "fr", turns: ChatTurn[]): void {
+  try {
+    const persistentTurns = turns
+      .filter((turn) => !turn.error)
+      .slice(-MAX_STORED_TURNS);
+    window.localStorage.setItem(
+      memoryKey(locale),
+      JSON.stringify(persistentTurns),
+    );
+  } catch {
+    // Browser storage is optional; in-memory chat continues to work.
+  }
+}
 
 function HumanAvatar({
   src,
@@ -70,6 +135,11 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   const [busy, setBusy] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const localeRef = useRef(locale);
+  const requestSequence = useRef(0);
+  const skipNextMemoryWrite = useRef(true);
+  const [retryText, setRetryText] = useState("");
+  const [memoryReady, setMemoryReady] = useState(false);
 
   const ownerName =
     [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") ||
@@ -90,51 +160,149 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   }, [scrollToBottom]);
 
   useEffect(() => {
+    skipNextMemoryWrite.current = true;
+    setTurns(readStoredTurns(locale));
+    setRetryText("");
+    setMemoryReady(true);
+  }, [locale]);
+
+  useEffect(() => {
+    if (!memoryReady) return;
+    if (skipNextMemoryWrite.current) {
+      skipNextMemoryWrite.current = false;
+      return;
+    }
+    storeTurns(locale, turns);
+  }, [locale, memoryReady, turns]);
+
+  useEffect(() => {
     if (busy) scrollToBottom();
   }, [busy, scrollToBottom]);
+
+  useEffect(() => {
+    if (localeRef.current === locale) return;
+    localeRef.current = locale;
+    requestSequence.current += 1;
+    setInput("");
+    setRetryText("");
+    setBusy(false);
+  }, [locale]);
 
   const send = async (text?: string) => {
     const trimmed = (text ?? input).trim();
     if (!trimmed || busy) return;
-    const next: ChatTurn[] = [...turns, { role: "user", content: trimmed }];
+    const history = turns.filter((turn) => !turn.error);
+    const next: ChatTurn[] = [
+      ...history,
+      {
+        id: createTurnId("user"),
+        role: "user",
+        content: trimmed.slice(0, 4_000),
+      },
+    ];
+    const requestId = ++requestSequence.current;
+    const requestLocale = locale;
     setTurns(next);
     setInput("");
+    setRetryText("");
     setBusy(true);
     scrollToBottom();
     try {
       const result: TwinChatResponse = await chatWithTwin(
         next.map((t) => ({ role: t.role, content: t.content })),
         profile,
-        locale,
+        requestLocale,
       );
+      if (
+        requestId !== requestSequence.current ||
+        requestLocale !== localeRef.current
+      ) {
+        return;
+      }
       setTurns((prev) => [
         ...prev,
         {
+          id: createTurnId("assistant"),
           role: "assistant",
-          content: result.message ?? dict.chat.fallbackError,
+          content: result.message,
           error: !result.ok,
-          fallback: true,
+          source: result.source,
+          model: result.model,
         },
       ]);
     } catch {
+      if (
+        requestId !== requestSequence.current ||
+        requestLocale !== localeRef.current
+      ) {
+        return;
+      }
+      setRetryText(trimmed);
       setTurns((prev) => [
         ...prev,
         {
+          id: createTurnId("assistant"),
           role: "assistant",
-          content: dict.chat.fallbackError,
+          content: dict.chat.connectionError,
           error: true,
-          fallback: true,
         },
       ]);
     } finally {
-      setBusy(false);
-      inputRef.current?.focus();
+      if (requestId === requestSequence.current) {
+        setBusy(false);
+        inputRef.current?.focus();
+      }
     }
   };
 
   const quickPromptKey = (
     key: (typeof QUICK_PROMPTS)[number],
   ): keyof typeof dict.chat => `${key}Prompt`;
+
+  const clearConversation = () => {
+    requestSequence.current += 1;
+    setTurns([]);
+    setInput("");
+    setRetryText("");
+    setBusy(false);
+    try {
+      window.localStorage.removeItem(memoryKey(locale));
+    } catch {
+      // Clearing in-memory history is still sufficient.
+    }
+  };
+
+  const sendFeedback = async (
+    turn: ChatTurn,
+    rating: TwinFeedbackInput["rating"],
+  ) => {
+    if (turn.feedback || turn.error) return;
+    const turnIndex = turns.findIndex((item) => item.id === turn.id);
+    const question = [...turns]
+      .slice(0, turnIndex)
+      .reverse()
+      .find((item) => item.role === "user")?.content;
+    if (!question) return;
+
+    setTurns((current) =>
+      current.map((item) =>
+        item.id === turn.id ? { ...item, feedback: rating } : item,
+      ),
+    );
+    try {
+      await submitTwinFeedback({
+        messageId: turn.id,
+        rating,
+        locale,
+        question,
+        answer: turn.content,
+        source: turn.source,
+        model: turn.model,
+      });
+    } catch {
+      // The local vote remains recorded and the conversation is unaffected.
+    }
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden border-r border-border/60 bg-background text-foreground">
@@ -148,6 +316,20 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
             {dict.chat.availableOnline}
           </p>
         </div>
+        <span className="shrink-0 rounded-md border border-border/60 bg-muted/40 px-2 py-1 text-[10px] font-medium text-muted-foreground">
+          {dict.chat.replyLanguage}: {localeName[locale]}
+        </span>
+        {turns.length ? (
+          <button
+            type="button"
+            onClick={clearConversation}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label={dict.chat.clearHistory}
+            title={dict.chat.clearHistory}
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        ) : null}
       </header>
 
       {/* ── Messages ───────────────────────────────────────── */}
@@ -199,8 +381,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
           ) : (
             turns.map((turn, i) => (
               <motion.div
-                // biome-ignore lint/suspicious/noArrayIndexKey: chat turns have no stable id
-                key={i}
+                key={turn.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
@@ -234,7 +415,58 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
                       {turn.content}
                     </p>
                   ) : (
-                    <ChatMarkdown content={turn.content} />
+                    <>
+                      <ChatMarkdown content={turn.content} />
+                      {turn.error && retryText && i === turns.length - 1 ? (
+                        <button
+                          type="button"
+                          onClick={() => send(retryText)}
+                          className="mt-2 inline-flex items-center gap-1.5 font-medium underline underline-offset-4"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          {dict.chat.retry}
+                        </button>
+                      ) : null}
+                      {!turn.error ? (
+                        <div className="mt-2 flex items-center gap-1 border-t border-border/50 pt-2">
+                          <span className="mr-1 text-[10px] text-muted-foreground">
+                            {turn.feedback
+                              ? dict.chat.feedbackThanks
+                              : dict.chat.wasHelpful}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => sendFeedback(turn, "helpful")}
+                            disabled={Boolean(turn.feedback)}
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-default",
+                              turn.feedback === "helpful"
+                                ? "bg-primary/10 text-primary"
+                                : "",
+                            )}
+                            aria-label={dict.chat.helpful}
+                            title={dict.chat.helpful}
+                          >
+                            <ThumbsUp className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => sendFeedback(turn, "not-helpful")}
+                            disabled={Boolean(turn.feedback)}
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:cursor-default",
+                              turn.feedback === "not-helpful"
+                                ? "bg-destructive/10 text-destructive"
+                                : "",
+                            )}
+                            aria-label={dict.chat.notHelpful}
+                            title={dict.chat.notHelpful}
+                          >
+                            <ThumbsDown className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : null}
+                    </>
                   )}
                 </div>
 
@@ -283,6 +515,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              maxLength={4_000}
               placeholder={dict.chat.placeholder}
               className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
               onKeyDown={(e) => {
@@ -308,7 +541,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
           </button>
         </form>
         <p className="mt-1.5 px-1 text-center text-[10px] leading-tight text-muted-foreground/70">
-          {dict.chat.disclaimer}
+          {dict.chat.memoryNotice}
         </p>
       </div>
     </div>
