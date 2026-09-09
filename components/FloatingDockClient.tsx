@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useOptionalAuth } from "@/components/AuthProvider";
 import { useLocale } from "@/components/LocaleProvider";
+import { cn } from "@/lib/utils";
 import { DynamicIcon } from "./DynamicIcon";
 import { useSidebar } from "./ui/sidebar";
 
@@ -155,6 +156,7 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
                 key={`${item.title}-${item.href}-mobile`}
                 item={item}
                 isVertical={true}
+                showLabel
                 onItemClick={() => setMobileMenuOpen(false)}
               />
             ))}
@@ -186,7 +188,8 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
                       <DockIcon
                         key={`${item.title}-${item.href}-mobile-more`}
                         item={item}
-                        isVertical={false}
+                        isVertical={true}
+                        showLabel
                         onItemClick={() => {
                           setMobileMoreMenuOpen(false);
                           setMobileMenuOpen(false);
@@ -207,10 +210,12 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
 function DockIcon({
   item,
   isVertical,
+  showLabel = false,
   onItemClick,
 }: {
   item: DockLink;
   isVertical: boolean;
+  showLabel?: boolean;
   onItemClick?: () => void;
 }) {
   const baseIconClasses =
@@ -250,7 +255,12 @@ function DockIcon({
 
   const content = (
     <>
-      <div className={isVertical ? verticalIconClasses : horizontalIconClasses}>
+      <div
+        className={cn(
+          isVertical ? verticalIconClasses : horizontalIconClasses,
+          showLabel && "h-9 w-9 shrink-0",
+        )}
+      >
         <div
           className={`w-6 h-6 md:w-6 md:h-6 ${
             isVertical
@@ -261,12 +271,18 @@ function DockIcon({
           {item.icon}
         </div>
       </div>
+      {showLabel ? (
+        <span className="w-full truncate text-center text-[11px] font-medium leading-tight text-neutral-700 dark:text-neutral-200">
+          {item.title}
+        </span>
+      ) : null}
       <Tooltip direction={isVertical ? "vertical" : "horizontal"} />
     </>
   );
 
-  const wrapperClasses =
-    "group relative flex items-center justify-center w-12 h-12 md:w-12 md:h-12";
+  const wrapperClasses = showLabel
+    ? "group relative flex min-h-14 w-full min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1"
+    : "group relative flex h-12 w-12 items-center justify-center md:h-12 md:w-12";
 
   return item.onClick ? (
     <button type="button" onClick={handleClick} className={wrapperClasses}>

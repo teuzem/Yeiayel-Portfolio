@@ -138,8 +138,8 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const localeRef = useRef(locale);
+  const loadedMemoryLocale = useRef<"en" | "fr" | null>(null);
   const requestSequence = useRef(0);
-  const skipNextMemoryWrite = useRef(true);
   const [retryText, setRetryText] = useState("");
   const [memoryReady, setMemoryReady] = useState(false);
 
@@ -162,18 +162,16 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   }, [scrollToBottom]);
 
   useEffect(() => {
-    skipNextMemoryWrite.current = true;
+    loadedMemoryLocale.current = null;
+    setMemoryReady(false);
     setTurns(readStoredTurns(locale));
     setRetryText("");
+    loadedMemoryLocale.current = locale;
     setMemoryReady(true);
   }, [locale]);
 
   useEffect(() => {
-    if (!memoryReady) return;
-    if (skipNextMemoryWrite.current) {
-      skipNextMemoryWrite.current = false;
-      return;
-    }
+    if (!memoryReady || loadedMemoryLocale.current !== locale) return;
     storeTurns(locale, turns);
   }, [locale, memoryReady, turns]);
 

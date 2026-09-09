@@ -193,6 +193,15 @@ function Sidebar({
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+              width: "100vw",
+              maxWidth: "100vw",
+              height: "100dvh",
+              maxHeight: "100dvh",
+              inset: 0,
+              right: "auto",
+              left: 0,
+              top: 0,
+              bottom: "auto",
             } as React.CSSProperties
           }
           side={side}
