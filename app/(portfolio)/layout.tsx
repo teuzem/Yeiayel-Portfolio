@@ -9,7 +9,6 @@ import { FloatingDock } from "@/components/FloatingDock";
 import { GeoProvider } from "@/components/GeoProvider";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
-import { PwaRegister } from "@/components/PwaRegister";
 import SidebarToggle from "@/components/SidebarToggle";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -63,7 +62,6 @@ export default async function PortfolioLayout({
             </ThemeProvider>
           </GeoProvider>
         </LocaleProvider>
-        <PwaRegister />
       </div>
     </AuthProvider>
   );

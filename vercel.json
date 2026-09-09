@@ -2,5 +2,13 @@
   "version": 2,
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "npm ci --no-audit --no-fund"
+  "installCommand": "npm ci --no-audit --no-fund",
+  "build": {
+    "env": {
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "NEXT_PUBLIC_SANITY_PROJECT_ID": "mbj53wuq",
+      "NEXT_PUBLIC_SANITY_DATASET": "production",
+      "NEXT_PUBLIC_SANITY_API_VERSION": "2025-10-15"
+    }
+  }
 }

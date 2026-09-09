@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isSanityWriteConfigured } from "@/sanity/lib/serverEnv";
 
 export const dynamic = "force-dynamic";
 
@@ -23,18 +24,18 @@ export async function POST(req: Request) {
       provider = "kpay";
     else if (headers["x-giselpay-signature"]) provider = "giselpay";
 
-    console.log("Payment webhook received", { provider, body });
-
-    const { serverClient } = await import("@/sanity/lib/serverClient");
-    try {
-      await serverClient.create({
-        _type: "paymentWebhook",
-        provider,
-        payload: body,
-        receivedAt: new Date().toISOString(),
-      });
-    } catch {
-      /* webhook ledger is optional — do not fail request */
+    if (isSanityWriteConfigured) {
+      const { serverClient } = await import("@/sanity/lib/serverClient");
+      try {
+        await serverClient.create({
+          _type: "paymentWebhook",
+          provider,
+          payload: body,
+          receivedAt: new Date().toISOString(),
+        });
+      } catch {
+        // The optional webhook ledger must not cause provider retries.
+      }
     }
 
     return NextResponse.json({ ok: true });

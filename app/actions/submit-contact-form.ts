@@ -1,6 +1,7 @@
 "use server";
 
 import { serverClient } from "@/sanity/lib/serverClient";
+import { isSanityWriteConfigured } from "@/sanity/lib/serverEnv";
 
 export async function submitContactForm(formData: FormData) {
   try {
@@ -14,6 +15,14 @@ export async function submitContactForm(formData: FormData) {
       return {
         success: false,
         error: "Please fill in all required fields",
+      };
+    }
+
+    if (!isSanityWriteConfigured) {
+      return {
+        success: false,
+        error:
+          "Contact storage is not configured. Please use the direct contact details instead.",
       };
     }
 
@@ -33,7 +42,9 @@ export async function submitContactForm(formData: FormData) {
       data: result,
     };
   } catch (error) {
-    console.error("Error submitting contact form:", error);
+    const details =
+      error instanceof Error ? error.message : "Unknown persistence error";
+    console.error(`Error submitting contact form: ${details}`);
     return {
       success: false,
       error: "Failed to submit the form. Please try again later.",

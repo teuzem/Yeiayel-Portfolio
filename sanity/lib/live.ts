@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { isSanityConfigured } from "../env";
 import { client } from "./client";
 
 /**
@@ -16,13 +17,18 @@ export async function sanityFetch<T = any>({
   query: string;
   params?: Record<string, unknown>;
 }): Promise<{ data: T }> {
+  if (!isSanityConfigured) {
+    return { data: null as T };
+  }
+
   try {
     const data = await client.fetch<T>(query, params ?? {}, {
       next: { revalidate: 60, tags: ["sanity"] },
     });
     return { data };
   } catch (error) {
-    console.error("Sanity fetch failed:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(`Sanity fetch failed: ${message}`);
     return { data: null as T };
   }
 }

@@ -4,6 +4,7 @@ import { isProviderEnabled } from "@/lib/payments/config";
 import { createPayment } from "@/lib/payments/server";
 import type { PaymentRequest, PaymentResult } from "@/lib/payments/types";
 import { serverClient } from "@/sanity/lib/serverClient";
+import { isSanityWriteConfigured } from "@/sanity/lib/serverEnv";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -72,7 +73,7 @@ export async function createServicePayment(input: {
 
     const result = await createPayment(request);
 
-    if (result.success) {
+    if (result.success && isSanityWriteConfigured) {
       // Persist the request (as draft or doc) for tracking
       try {
         await serverClient.create({
@@ -86,7 +87,9 @@ export async function createServicePayment(input: {
           status: "new",
         });
       } catch (inner) {
-        console.error("Failed to store payment request in Sanity:", inner);
+        const message =
+          inner instanceof Error ? inner.message : "Unknown persistence error";
+        console.error(`Failed to store payment request in Sanity: ${message}`);
       }
     }
 
