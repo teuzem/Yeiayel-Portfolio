@@ -117,7 +117,7 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
 
               {/* Desktop More Menu - Expands Upward */}
               {desktopMoreMenuOpen && (
-                <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[100] flex flex-col-reverse gap-2 p-3 rounded-xl bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom-2 duration-200">
+                <div className="absolute bottom-16 left-1/2 z-[100] grid max-h-[min(22rem,calc(100vh-8rem))] w-max max-w-[min(26rem,calc(100vw-2rem))] -translate-x-1/2 grid-cols-2 gap-2 overflow-y-auto rounded-xl border border-white/40 bg-white/90 p-3 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] backdrop-blur-xl [scrollbar-width:none] animate-in slide-in-from-bottom-2 duration-200 dark:border-white/30 dark:bg-black/90 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] [&::-webkit-scrollbar]:hidden">
                   {desktop.hidden.map((item) => (
                     <DockIcon
                       key={`${item.title}-${item.href}-more`}
@@ -133,8 +133,8 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
         </div>
       </div>
 
-      {/* Mobile: Hamburger menu button at top right */}
-      <div className="md:hidden fixed top-4 right-4 z-30">
+      {/* Mobile: compact bottom navigation launcher */}
+      <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-4 z-30 md:hidden">
         <button
           type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -147,9 +147,9 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
           )}
         </button>
 
-        {/* Mobile Vertical menu */}
+        {/* Mobile navigation grid */}
         {mobileMenuOpen && (
-          <div className="absolute top-14 right-0 z-[100] flex flex-col gap-2 p-3 rounded-xl bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] animate-in slide-in-from-top-2 duration-200">
+          <div className="absolute bottom-14 left-0 z-[100] grid max-h-[min(70dvh,30rem)] w-[min(18rem,calc(100vw-2rem))] grid-cols-2 gap-2 overflow-y-auto rounded-xl border border-white/40 bg-white/90 p-3 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] backdrop-blur-xl [scrollbar-width:none] animate-in slide-in-from-bottom-2 duration-200 dark:border-white/30 dark:bg-black/90 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] [&::-webkit-scrollbar]:hidden">
             {mobile.visible.map((item) => (
               <DockIcon
                 key={`${item.title}-${item.href}-mobile`}
@@ -161,7 +161,7 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
 
             {/* Mobile More Menu Button */}
             {mobile.shouldShowMore && (
-              <div className="relative">
+              <div className="relative col-span-2 flex flex-col items-center">
                 <button
                   type="button"
                   onClick={() => setMobileMoreMenuOpen(!mobileMoreMenuOpen)}
@@ -176,16 +176,12 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
                       )}
                     </div>
                   </div>
-                  {/* Tooltip */}
-                  <div className="absolute right-14 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/20 text-sm font-medium text-neutral-800 dark:text-neutral-200 whitespace-nowrap opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-hover:-translate-x-1 transition-all duration-300 pointer-events-none shadow-[0_8px_32px_0_rgba(0,0,0,0.2)]">
-                    {dict.nav.more}
-                    <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-white/90 dark:bg-black/90 border-r border-t border-white/40 dark:border-white/20" />
-                  </div>
+                  <span className="sr-only">{dict.nav.more}</span>
                 </button>
 
-                {/* Mobile More Menu - Expands Sideways (to the left) */}
+                {/* Mobile More Menu - Expands inside the bounded grid */}
                 {mobileMoreMenuOpen && (
-                  <div className="absolute top-0 right-16 z-[110] flex flex-row-reverse gap-2 p-3 rounded-xl bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] animate-in slide-in-from-right-2 duration-200">
+                  <div className="mt-2 grid w-full grid-cols-2 gap-2 border-t border-black/10 pt-2 dark:border-white/10">
                     {mobile.hidden.map((item) => (
                       <DockIcon
                         key={`${item.title}-${item.href}-mobile-more`}

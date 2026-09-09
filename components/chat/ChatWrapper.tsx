@@ -3,7 +3,6 @@ import TwinChat from "@/components/chat/TwinChat";
 import { normalizeProfile, type TwinProfile } from "@/lib/twin";
 import { urlFor } from "@/sanity/lib/image";
 import { sanityFetch } from "@/sanity/lib/live";
-import SidebarToggle from "../SidebarToggle";
 
 const CHAT_PROFILE_QUERY = defineQuery(`*[_id == "singleton-profile"][0]{
     _id,
@@ -40,11 +39,7 @@ async function ChatWrapper() {
   const { data: profile } = await sanityFetch({ query: CHAT_PROFILE_QUERY });
 
   return (
-    <div className="h-full w-full">
-      <div className="md:hidden p-2 sticky top-0 z-10">
-        <SidebarToggle />
-      </div>
-
+    <div className="h-full min-h-0 w-full overflow-hidden">
       <TwinChat profile={toProfile(profile)} />
     </div>
   );

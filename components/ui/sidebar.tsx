@@ -189,7 +189,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          className="inset-0 h-dvh max-h-dvh w-screen max-w-none translate-x-0 translate-y-0 gap-0 overflow-hidden border-0 bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -201,7 +201,9 @@ function Sidebar({
             <SheetTitle>{dict.misc.sidebarTitle}</SheetTitle>
             <SheetDescription>{dict.misc.sidebarDescription}</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div className="flex h-dvh min-h-0 w-full flex-col overflow-hidden">
+            {children}
+          </div>
         </SheetContent>
       </Sheet>
     );

@@ -8,6 +8,7 @@ import {
   ThumbsUp,
   Trash2,
   User,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -18,6 +19,7 @@ import {
 import { chatWithTwin, type TwinChatResponse } from "@/app/actions/twin-chat";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 import { useLocale } from "@/components/LocaleProvider";
+import { useSidebar } from "@/components/ui/sidebar";
 import type { TwinProfile } from "@/lib/twin";
 import { cn } from "@/lib/utils";
 
@@ -129,6 +131,7 @@ function HumanAvatar({
 
 export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   const { dict, locale } = useLocale();
+  const { isMobile, setOpen, setOpenMobile } = useSidebar();
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -271,6 +274,16 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
     }
   };
 
+  const closeChat = () => {
+    requestSequence.current += 1;
+    setBusy(false);
+    if (isMobile) {
+      setOpenMobile(false);
+    } else {
+      setOpen(false);
+    }
+  };
+
   const sendFeedback = async (
     turn: ChatTurn,
     rating: TwinFeedbackInput["rating"],
@@ -304,9 +317,9 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden border-r border-border/60 bg-background text-foreground">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-background text-foreground md:border-r md:border-border/60">
       {/* ── Header ─────────────────────────────────────────── */}
-      <header className="flex items-center gap-3 border-b border-border/60 bg-background px-4 py-3">
+      <header className="flex shrink-0 items-center gap-3 border-b border-border/60 bg-background px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4">
         <HumanAvatar src={profile?.profileImageUrl} label={ownerName} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{ownerName}</p>
@@ -326,12 +339,21 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
             <Trash2 className="h-4 w-4" />
           </button>
         ) : null}
+        <button
+          type="button"
+          onClick={closeChat}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/60 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label={dict.misc.closeChat}
+          title={dict.misc.closeChat}
+        >
+          <X className="h-4 w-4" />
+        </button>
       </header>
 
       {/* ── Messages ───────────────────────────────────────── */}
       <div
         ref={listRef}
-        className="flex-1 space-y-4 overflow-y-auto px-4 py-5 [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]"
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-4 sm:py-5"
       >
         <AnimatePresence initial>
           {turns.length === 0 ? (
@@ -339,7 +361,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
               key="welcome"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex h-full flex-col justify-center"
+              className="flex min-h-full flex-col justify-center py-2"
             >
               <div className="mb-5 flex justify-center">
                 <HumanAvatar
@@ -351,7 +373,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
               <p className="mb-6 text-center text-sm leading-relaxed text-muted-foreground">
                 {dict.chat.greetingDefault}
               </p>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-2.5">
                 {QUICK_PROMPTS.map((key, i) => (
                   <motion.button
                     key={key}
@@ -395,7 +417,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
 
                 <div
                   className={cn(
-                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm",
+                    "max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm sm:max-w-[80%] sm:px-4",
                     turn.role === "user"
                       ? "rounded-br-md bg-foreground text-background"
                       : cn(
@@ -498,7 +520,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
       </div>
 
       {/* ── Composer ───────────────────────────────────────── */}
-      <div className="border-t border-border/60 bg-background px-3 pb-3 pt-2">
+      <div className="shrink-0 border-t border-border/60 bg-background px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
         <form
           onSubmit={(e) => {
             e.preventDefault();
