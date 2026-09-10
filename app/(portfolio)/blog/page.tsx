@@ -1,10 +1,15 @@
-import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { getServerLocale } from "@/components/server-context";
-import { blogImageUrl, getBlogPosts, getBlogSettings } from "@/lib/blog";
+import {
+  blogCategoryText,
+  blogImageUrl,
+  getBlogCategories,
+  getBlogPosts,
+  getBlogSettings,
+} from "@/lib/blog";
 import { getSiteSettings, getSiteUrl } from "@/lib/site-settings";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -17,7 +22,6 @@ export async function generateMetadata(): Promise<Metadata> {
     blogSettings.heroDescription ||
     "Practical insights on data science, artificial intelligence, software engineering, and digital innovation.";
   const image = blogImageUrl(blogSettings.logo, 1200, 630);
-
   return {
     title,
     description,
@@ -33,125 +37,165 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BlogPage() {
-  const [locale, settings, posts, blogSettings] = await Promise.all([
+  const [locale, posts, categories, settings] = await Promise.all([
     getServerLocale(),
-    getSiteSettings(),
     getBlogPosts(),
+    getBlogCategories(),
     getBlogSettings(),
   ]);
   const isFr = locale === "fr";
-  const name =
-    (isFr
-      ? blogSettings.nameFr || blogSettings.name
-      : blogSettings.name || blogSettings.nameFr) || "Yeiayel Journal";
+  const featured = posts.find((post) => post.featured) || posts[0];
+  const latest = posts.filter((post) => post._id !== featured?._id).slice(0, 6);
+  const trending = posts.filter((post) => post.trending).slice(0, 3);
   const heroTitle =
     (isFr
-      ? blogSettings.heroTitleFr || blogSettings.heroTitle
-      : blogSettings.heroTitle || blogSettings.heroTitleFr) ||
+      ? settings.heroTitleFr || settings.heroTitle
+      : settings.heroTitle || settings.heroTitleFr) ||
     (isFr
-      ? "Idées appliquées pour un avenir numérique utile"
+      ? "Des idées appliquées pour un avenir numérique utile"
       : "Applied ideas for a useful digital future");
   const heroDescription =
     (isFr
-      ? blogSettings.heroDescriptionFr || blogSettings.heroDescription
-      : blogSettings.heroDescription || blogSettings.heroDescriptionFr) ||
+      ? settings.heroDescriptionFr || settings.heroDescription
+      : settings.heroDescription || settings.heroDescriptionFr) ||
     (isFr
-      ? "Des analyses concrètes sur la data science, l'IA, l'ingénierie logicielle et l'innovation numérique."
-      : "Practical analysis on data science, AI, software engineering, and digital innovation.");
-  const position =
-    (isFr
-      ? blogSettings.positionFr || blogSettings.position
-      : blogSettings.position || blogSettings.positionFr) ||
-    (isFr
-      ? "Data Science et innovation numérique chez Bâtir le Pays SARL"
-      : "Data Science and digital innovation at Bâtir le Pays SARL");
-  const logoUrl =
-    blogImageUrl(blogSettings.logo, 720, 288) || "/blog/batir-le-pays-logo.png";
-  const accent = blogSettings.accentColor || settings.accentColor || "#0F766E";
+      ? "Data science, IA, ingénierie logicielle et innovation numérique expliquées avec rigueur et orientées vers l'action."
+      : "Data science, AI, software engineering, and digital innovation explained rigorously and built for action.");
 
   return (
-    <main className="min-h-screen bg-background">
-      <section
-        className="border-b bg-muted/35"
-        style={{ borderTopColor: accent, borderTopWidth: "4px" }}
-      >
-        <div className="container mx-auto max-w-6xl px-6 py-12 sm:py-16">
+    <main>
+      <section className="border-b bg-muted/30">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-14 lg:grid-cols-[1.15fr_.85fr] lg:py-20">
+          <div>
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
+              <Sparkles className="size-4" />
+              {isFr ? "Perspectives de Yeiayel" : "Insights by Yeiayel"}
+            </p>
+            <h1 className="mt-5 max-w-4xl text-4xl font-bold tracking-tight sm:text-6xl">
+              {heroTitle}
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+              {heroDescription}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/blog/articles"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
+              >
+                {isFr ? "Explorer les articles" : "Explore articles"}{" "}
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/blog/search"
+                className="rounded-md border bg-background px-5 py-3 text-sm font-semibold hover:bg-muted"
+              >
+                {isFr ? "Recherche avancée" : "Advanced search"}
+              </Link>
+            </div>
+          </div>
+          {featured && <BlogCard post={featured} locale={locale} />}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-14">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-primary">
+              {isFr ? "Explorer" : "Explore"}
+            </p>
+            <h2 className="mt-2 text-3xl font-bold">
+              {isFr ? "Domaines d'expertise" : "Areas of expertise"}
+            </h2>
+          </div>
           <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            href="/blog/categories"
+            className="text-sm font-semibold text-primary hover:underline"
           >
-            <ArrowLeft className="size-4" />
-            {isFr ? "Retour au portfolio" : "Back to portfolio"}
+            {isFr ? "Toutes les catégories" : "All categories"}
           </Link>
-          <div className="mt-8 grid items-center gap-10 lg:grid-cols-[1fr_auto]">
-            <div className="max-w-3xl">
-              <p className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
-                <Sparkles className="size-4" />
-                {position}
-              </p>
-              <h1 className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">
-                {heroTitle}
-              </h1>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
-                {heroDescription}
-              </p>
-            </div>
-            <div className="justify-self-start rounded-lg border bg-background p-4 shadow-sm lg:justify-self-end">
-              <Image
-                src={logoUrl}
-                alt={name}
-                width={360}
-                height={144}
-                className="h-auto w-52 object-contain sm:w-64"
-                priority
-              />
-            </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {categories.slice(0, 8).map((category) => {
+            const text = blogCategoryText(category, locale);
+            return (
+              <Link
+                key={category._id}
+                href={`/blog/categories/${category.slug}`}
+                className="group rounded-lg border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                <span
+                  className="block size-10 rounded-md"
+                  style={{ backgroundColor: category.color || "#0F766E" }}
+                />
+                <h3 className="mt-5 font-semibold">{text.title}</h3>
+                <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                  {text.description}
+                </p>
+                <p className="mt-4 text-xs font-medium text-primary">
+                  {category.articleCount || 0} {isFr ? "articles" : "articles"}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="bg-muted/30">
+        <div className="mx-auto max-w-7xl px-6 py-14">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <h2 className="text-3xl font-bold">
+              {isFr ? "Dernières publications" : "Latest publications"}
+            </h2>
+            <Link
+              href="/blog/articles"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+            >
+              {isFr ? "Voir tout" : "View all"}{" "}
+              <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {latest.map((post) => (
+              <BlogCard key={post._id} post={post} locale={locale} />
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="container mx-auto max-w-6xl px-6 py-12 sm:py-16">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-primary">{name}</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight">
-              {isFr ? "Dernières publications" : "Latest publications"}
-            </h2>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {posts.length === 1
-              ? isFr
-                ? "1 article publié"
-                : "1 published article"
-              : isFr
-                ? `${posts.length} articles publiés`
-                : `${posts.length} published articles`}
-          </p>
-        </div>
-
-        {posts.length ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
+      {trending.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 py-14">
+          <h2 className="flex items-center gap-3 text-3xl font-bold">
+            <TrendingUp className="size-7 text-primary" />
+            {isFr ? "À lire maintenant" : "Trending now"}
+          </h2>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {trending.map((post) => (
               <BlogCard key={post._id} post={post} locale={locale} />
             ))}
           </div>
-        ) : (
-          <div className="grid min-h-72 place-items-center rounded-lg border border-dashed bg-muted/20 p-8 text-center">
-            <div className="max-w-md">
-              <BookOpen className="mx-auto size-10 text-primary" />
-              <h2 className="mt-4 text-xl font-semibold">
-                {isFr
-                  ? "Les premiers articles arrivent bientôt."
-                  : "The first articles are coming soon."}
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {isFr
-                  ? "Publiez un article dans Sanity Studio avec le statut « Publié » pour l'afficher ici."
-                  : "Publish a post in Sanity Studio with the “Published” status to show it here."}
-              </p>
-            </div>
-          </div>
-        )}
+        </section>
+      )}
+
+      <section className="border-t bg-foreground px-6 py-16 text-background">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-bold">
+            {isFr
+              ? "Transformer les idées en résultats"
+              : "Turn ideas into useful outcomes"}
+          </h2>
+          <p className="mt-4 text-background/70">
+            {isFr
+              ? "Découvrez le portfolio, les services et les projets qui prolongent ces analyses."
+              : "Explore the portfolio, services, and projects that put these insights into practice."}
+          </p>
+          <Link
+            href="/"
+            className="mt-7 inline-flex items-center gap-2 rounded-md bg-background px-5 py-3 text-sm font-semibold text-foreground"
+          >
+            {isFr ? "Voir le portfolio" : "View portfolio"}{" "}
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
       </section>
     </main>
   );

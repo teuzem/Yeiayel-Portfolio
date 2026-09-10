@@ -41,14 +41,17 @@ export interface BlogPost {
   seoDescriptionFr?: string | null;
   noIndex?: boolean | null;
   author?: {
+    slug?: string | null;
     name?: string | null;
     role?: string | null;
     roleFr?: string | null;
     image?: BlogImage | null;
   } | null;
   product?: {
+    slug?: string | null;
     name?: string | null;
     brand?: string | null;
+    image?: BlogImage | null;
     score?: number | null;
     url?: string | null;
   } | null;
@@ -71,6 +74,42 @@ export interface BlogSettings {
   position?: string | null;
   positionFr?: string | null;
   accentColor?: string | null;
+}
+
+export interface BlogCategory {
+  _id: string;
+  title?: string | null;
+  titleFr?: string | null;
+  slug?: string | null;
+  description?: string | null;
+  descriptionFr?: string | null;
+  color?: string | null;
+  articleCount?: number;
+}
+
+export interface BlogAuthor {
+  _id: string;
+  name?: string | null;
+  slug?: string | null;
+  role?: string | null;
+  roleFr?: string | null;
+  bio?: string | null;
+  bioFr?: string | null;
+  image?: BlogImage | null;
+  articleCount?: number;
+}
+
+export interface BlogProduct {
+  _id: string;
+  name?: string | null;
+  slug?: string | null;
+  brand?: string | null;
+  description?: string | null;
+  descriptionFr?: string | null;
+  image?: BlogImage | null;
+  score?: number | null;
+  url?: string | null;
+  articleCount?: number;
 }
 
 const POST_FIELDS = `
@@ -98,8 +137,8 @@ const POST_FIELDS = `
   seoDescription,
   seoDescriptionFr,
   noIndex,
-  "author": author->{name, role, roleFr, image},
-  "product": product->{name, brand, score, url},
+  "author": author->{name, "slug": slug.current, role, roleFr, image},
+  "product": product->{name, "slug": slug.current, brand, image, score, url},
   sources
 `;
 
@@ -128,6 +167,22 @@ const BLOG_SETTINGS_QUERY = defineQuery(`*[_type == "blogSettings"][0]{
   position,
   positionFr,
   accentColor
+}`);
+
+const CATEGORIES_QUERY =
+  defineQuery(`*[_type == "blogCategory"] | order(title asc){
+  _id, title, titleFr, "slug": slug.current, description, descriptionFr, color,
+  "articleCount": count(*[${PUBLISHED_FILTER} && references(^._id)])
+}`);
+
+const AUTHORS_QUERY = defineQuery(`*[_type == "blogAuthor"] | order(name asc){
+  _id, name, "slug": slug.current, role, roleFr, bio, bioFr, image,
+  "articleCount": count(*[${PUBLISHED_FILTER} && references(^._id)])
+}`);
+
+const PRODUCTS_QUERY = defineQuery(`*[_type == "blogProduct"] | order(name asc){
+  _id, name, "slug": slug.current, brand, description, descriptionFr, image, score, url,
+  "articleCount": count(*[${PUBLISHED_FILTER} && references(^._id)])
 }`);
 
 export function localizedBlogText(
@@ -207,4 +262,34 @@ export async function getBlogSettings(): Promise<BlogSettings> {
     query: BLOG_SETTINGS_QUERY,
   });
   return data || {};
+}
+
+export async function getBlogCategories(): Promise<BlogCategory[]> {
+  const { data } = await sanityFetch<BlogCategory[]>({
+    query: CATEGORIES_QUERY,
+  });
+  return data || [];
+}
+
+export async function getBlogAuthors(): Promise<BlogAuthor[]> {
+  const { data } = await sanityFetch<BlogAuthor[]>({ query: AUTHORS_QUERY });
+  return data || [];
+}
+
+export async function getBlogProducts(): Promise<BlogProduct[]> {
+  const { data } = await sanityFetch<BlogProduct[]>({ query: PRODUCTS_QUERY });
+  return data || [];
+}
+
+export function blogCategoryText(category: BlogCategory, locale: Locale) {
+  return {
+    title:
+      (locale === "fr"
+        ? category.titleFr || category.title
+        : category.title || category.titleFr) || "",
+    description:
+      (locale === "fr"
+        ? category.descriptionFr || category.description
+        : category.description || category.descriptionFr) || "",
+  };
 }

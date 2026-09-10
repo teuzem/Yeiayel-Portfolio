@@ -12,6 +12,13 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: "slug",
+      title: "Slug / Identifiant",
+      type: "slug",
+      options: { source: "name", maxLength: 80 },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: "role",
       title: "Role (EN) / Fonction (EN)",
       type: "string",

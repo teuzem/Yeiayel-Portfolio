@@ -11,7 +11,26 @@ export default defineType({
       type: "string",
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: "slug",
+      title: "Slug / Identifiant",
+      type: "slug",
+      options: { source: "name", maxLength: 80 },
+      validation: (Rule) => Rule.required(),
+    }),
     defineField({ name: "brand", title: "Brand / Marque", type: "string" }),
+    defineField({
+      name: "description",
+      title: "Description (EN)",
+      type: "text",
+      rows: 3,
+    }),
+    defineField({
+      name: "descriptionFr",
+      title: "Description (FR)",
+      type: "text",
+      rows: 3,
+    }),
     defineField({
       name: "image",
       title: "Product image / Image du produit",

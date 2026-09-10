@@ -40,6 +40,56 @@ const block = (text) => ({
 
 const now = new Date().toISOString();
 
+const categoryDescriptions = {
+  "data-science": {
+    description: "Models, data products, governance, and decision systems.",
+    descriptionFr:
+      "Modèles, produits data, gouvernance et systèmes de décision.",
+  },
+  "artificial-intelligence": {
+    description:
+      "Applied AI, machine learning, agents, and responsible delivery.",
+    descriptionFr:
+      "IA appliquée, machine learning, agents et livraison responsable.",
+  },
+  "data-analysis": {
+    description:
+      "Analytics methods, dashboards, visualization, and business insight.",
+    descriptionFr:
+      "Méthodes analytiques, tableaux de bord, visualisation et aide à la décision.",
+  },
+  "software-engineering": {
+    description:
+      "Full-stack systems, Python, web platforms, and product engineering.",
+    descriptionFr:
+      "Systèmes full-stack, Python, plateformes web et ingénierie produit.",
+  },
+  "cloud-security": {
+    description:
+      "Reliable deployments, infrastructure, networks, security, and operations.",
+    descriptionFr:
+      "Déploiements fiables, infrastructure, réseaux, sécurité et opérations.",
+  },
+  "career-education": {
+    description:
+      "Learning paths, professional development, and digital education.",
+    descriptionFr:
+      "Parcours d'apprentissage, évolution professionnelle et éducation numérique.",
+  },
+  "product-reviews": {
+    description:
+      "Evidence-based reviews of data, AI, cloud, and developer tools.",
+    descriptionFr:
+      "Évaluations argumentées des outils data, IA, cloud et développement.",
+  },
+  "batir-le-pays": {
+    description:
+      "Digital innovation and practical perspectives from Bâtir le Pays SARL.",
+    descriptionFr:
+      "Innovation numérique et perspectives pratiques de Bâtir le Pays SARL.",
+  },
+};
+
 const categories = [
   ["data-science", "Data Science", "Science des données", "#0F766E"],
   [
@@ -75,6 +125,7 @@ const categories = [
   title,
   titleFr,
   slug: { _type: "slug", current: slug },
+  ...categoryDescriptions[slug],
   color,
 }));
 
@@ -82,6 +133,7 @@ const author = {
   _id: "blog-author-yeiayel",
   _type: "blogAuthor",
   name: "NGOUMTSOP TEUZEM Yeiayel",
+  slug: { _type: "slug", current: "ngoumtsop-teuzem-yeiayel" },
   role: "Data Scientist, AI Engineer and Digital Innovation Professional",
   roleFr:
     "Data Scientist, ingénieur IA et professionnel de l'innovation numérique",
@@ -94,7 +146,12 @@ const product = {
   _id: "blog-product-analytics-stack",
   _type: "blogProduct",
   name: "Practical analytics stack",
+  slug: { _type: "slug", current: "practical-analytics-stack" },
   brand: "Independent review",
+  description:
+    "A practical assessment framework for analytics platforms, collaboration, governance, and maintainability.",
+  descriptionFr:
+    "Un cadre d'évaluation pratique des plateformes analytiques, de la collaboration, de la gouvernance et de la maintenabilité.",
   score: 4.5,
 };
 
@@ -272,6 +329,245 @@ const posts = [
   },
 ];
 
+const additionalPostBlueprints = [
+  [
+    "data-science",
+    "Designing a measurable data quality contract",
+    "Concevoir un contrat de qualité des données mesurable",
+    "A field guide to freshness, completeness, validity, and ownership checks that teams can operate every day.",
+    "Un guide pratique des contrôles de fraîcheur, complétude, validité et responsabilité que les équipes peuvent opérer chaque jour.",
+    ["data-quality", "governance", "operations"],
+    "HowTo",
+  ],
+  [
+    "data-science",
+    "From notebook to reliable machine learning service",
+    "Du notebook au service de machine learning fiable",
+    "The engineering decisions that turn an experiment into a monitored, versioned, and maintainable service.",
+    "Les décisions d'ingénierie qui transforment une expérimentation en service versionné, surveillé et maintenable.",
+    ["mlops", "machine-learning", "deployment"],
+    "HowTo",
+  ],
+  [
+    "ai-ml",
+    "What an AI Twin needs before it reaches users",
+    "Ce qu'un jumeau IA doit avoir avant d'atteindre ses utilisateurs",
+    "Memory, feedback, citations, multilingual behavior, and graceful provider failover for dependable AI conversations.",
+    "Mémoire, feedback, citations, comportement multilingue et bascule entre fournisseurs pour des conversations IA fiables.",
+    ["ai-twin", "agents", "product-design"],
+    "Article",
+  ],
+  [
+    "ai-ml",
+    "Grounded generation: keeping answers tied to evidence",
+    "Génération fondée sur les preuves : garder les réponses ancrées dans les faits",
+    "A practical explanation of retrieval, source quality, citation discipline, and refusal behavior for factual assistants.",
+    "Une explication pratique de la recherche, de la qualité des sources, des citations et du refus responsable pour les assistants factuels.",
+    ["rag", "citations", "responsible-ai"],
+    "HowTo",
+  ],
+  [
+    "ai-ml",
+    "Multilingual AI is a product requirement, not a translation layer",
+    "L'IA multilingue est une exigence produit, pas une simple traduction",
+    "How to design prompts, memory, UI copy, and evaluation around the active language from the first interaction.",
+    "Comment concevoir les prompts, la mémoire, l'interface et l'évaluation autour de la langue active dès la première interaction.",
+    ["multilingual-ai", "localization", "evaluation"],
+    "Opinion",
+  ],
+  [
+    "data-analysis",
+    "A dashboard is a decision system",
+    "Un tableau de bord est un système de décision",
+    "Why good analytics starts with decisions, definitions, audience, and action instead of chart volume.",
+    "Pourquoi une bonne analyse commence par les décisions, les définitions, l'audience et l'action plutôt que par le nombre de graphiques.",
+    ["analytics", "dashboards", "decision-making"],
+    "Article",
+  ],
+  [
+    "data-analysis",
+    "Choosing the right chart for the question",
+    "Choisir le bon graphique pour la bonne question",
+    "A practical visual guide to comparisons, trends, distributions, relationships, and uncertainty.",
+    "Un guide visuel pratique des comparaisons, tendances, distributions, relations et incertitudes.",
+    ["visualization", "storytelling", "analytics"],
+    "Guide",
+  ],
+  [
+    "data-analysis",
+    "Data storytelling for technical and non-technical teams",
+    "Raconter les données aux équipes techniques et métiers",
+    "A repeatable structure for moving from evidence to a clear recommendation without overstating certainty.",
+    "Une structure reproductible pour passer des faits à une recommandation claire sans exagérer la certitude.",
+    ["data-storytelling", "communication", "insight"],
+    "HowTo",
+  ],
+  [
+    "software-engineering",
+    "Building a production-ready Next.js application",
+    "Construire une application Next.js prête pour la production",
+    "A deployment-minded checklist covering configuration, runtime errors, caching, metadata, and health checks.",
+    "Une checklist orientée déploiement couvrant configuration, erreurs d'exécution, cache, métadonnées et contrôles de santé.",
+    ["nextjs", "production", "web-development"],
+    "HowTo",
+  ],
+  [
+    "software-engineering",
+    "Python project structure that scales with the team",
+    "Une structure de projet Python qui accompagne la croissance de l'équipe",
+    "Organize modules, tests, configuration, and documentation so the codebase stays understandable as features grow.",
+    "Organiser modules, tests, configuration et documentation pour garder une base compréhensible à mesure que les fonctionnalités grandissent.",
+    ["python", "architecture", "testing"],
+    "Guide",
+  ],
+  [
+    "software-engineering",
+    "API design principles for trustworthy services",
+    "Principes de conception d'API pour des services fiables",
+    "Naming, validation, errors, idempotency, observability, and versioning for APIs that clients can depend on.",
+    "Nommage, validation, erreurs, idempotence, observabilité et versionnement pour des API fiables.",
+    ["api-design", "backend", "reliability"],
+    "Article",
+  ],
+  [
+    "cloud-security",
+    "A calm deployment checklist for small teams",
+    "Une checklist de déploiement sereine pour les petites équipes",
+    "Environment variables, process managers, reverse proxies, logs, backups, and restart procedures in one practical flow.",
+    "Variables d'environnement, gestionnaires de processus, reverse proxy, journaux, sauvegardes et redémarrage dans un seul flux pratique.",
+    ["devops", "hosting", "deployment"],
+    "HowTo",
+  ],
+  [
+    "cloud-security",
+    "Security basics every data product should ship with",
+    "Les bases de sécurité de tout produit data",
+    "Least privilege, secret handling, input validation, audit trails, and incident readiness without unnecessary complexity.",
+    "Moindre privilège, gestion des secrets, validation des entrées, traces d'audit et préparation aux incidents sans complexité inutile.",
+    ["security", "privacy", "data-products"],
+    "Article",
+  ],
+  [
+    "cloud-security",
+    "Networks and observability for dependable applications",
+    "Réseaux et observabilité pour des applications fiables",
+    "Understand the path from browser to server and the signals that reveal latency, failures, and capacity problems.",
+    "Comprendre le chemin du navigateur au serveur et les signaux qui révèlent latence, pannes et problèmes de capacité.",
+    ["networks", "observability", "infrastructure"],
+    "Guide",
+  ],
+  [
+    "career-education",
+    "A practical learning path into data science",
+    "Un parcours d'apprentissage pratique vers la data science",
+    "Build capability through fundamentals, projects, communication, and feedback instead of collecting disconnected tools.",
+    "Développer ses compétences avec les fondamentaux, les projets, la communication et le feedback plutôt que d'empiler des outils.",
+    ["learning", "career", "data-science"],
+    "Guide",
+  ],
+  [
+    "career-education",
+    "How to explain technical work in an interview",
+    "Comment expliquer son travail technique en entretien",
+    "A clear structure for describing context, trade-offs, implementation, evidence, and lessons learned.",
+    "Une structure claire pour présenter contexte, compromis, réalisation, preuves et enseignements.",
+    ["career", "interviews", "communication"],
+    "HowTo",
+  ],
+  [
+    "batir-le-pays",
+    "Digital education that respects the local context",
+    "Une éducation numérique qui respecte le contexte local",
+    "Why adoption, language, access, and maintenance matter as much as the platform itself.",
+    "Pourquoi l'adoption, la langue, l'accès et la maintenance comptent autant que la plateforme elle-même.",
+    ["digital-education", "local-impact", "innovation"],
+    "Opinion",
+  ],
+  [
+    "batir-le-pays",
+    "Turning community needs into useful digital services",
+    "Transformer les besoins des communautés en services numériques utiles",
+    "A service-design perspective grounded in listening, prototyping, measurement, and sustainable ownership.",
+    "Une perspective de conception de services fondée sur l'écoute, le prototypage, la mesure et une responsabilité durable.",
+    ["service-design", "impact", "implementation"],
+    "Article",
+  ],
+  [
+    "review",
+    "Product review: a practical developer workflow",
+    "Évaluation produit : un workflow développeur pratique",
+    "A neutral framework for reviewing tools through setup, daily use, collaboration, reliability, and total cost.",
+    "Un cadre neutre pour évaluer les outils selon l'installation, l'usage quotidien, la collaboration, la fiabilité et le coût total.",
+    ["product-review", "developer-tools", "workflow"],
+    "Review",
+  ],
+  [
+    "review",
+    "How to evaluate an AI tool without hype",
+    "Comment évaluer un outil IA sans effet de mode",
+    "Use cases, failure modes, privacy, evidence, and operating cost form a stronger review than a feature checklist.",
+    "Les cas d'usage, limites, confidentialité, preuves et coûts d'exploitation forment une meilleure évaluation qu'une simple liste de fonctionnalités.",
+    ["ai-tools", "product-review", "evaluation"],
+    "Review",
+  ],
+];
+
+const additionalPosts = additionalPostBlueprints.map(
+  (
+    [category, title, titleFr, excerpt, excerptFr, tags, contentType],
+    index,
+  ) => {
+    const slug = String(title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    const frBody = `${excerptFr} Cette publication propose une méthode directement applicable, avec des hypothèses claires et des critères de vérification.`;
+    const enBody = `${excerpt} This article proposes a directly usable method with clear assumptions and practical verification criteria.`;
+    const categoryRef =
+      category === "ai-ml"
+        ? "blog-category-artificial-intelligence"
+        : category === "review"
+          ? "blog-category-product-reviews"
+          : `blog-category-${category}`;
+    return {
+      _id: `blog-post-${slug}`,
+      _type: "blog",
+      title,
+      titleFr,
+      slug: { _type: "slug", current: slug },
+      excerpt,
+      excerptFr,
+      content: [
+        block(enBody),
+        block(
+          `At Bâtir le Pays SARL, the useful question is always how this practice improves a real decision, service, or learning outcome.`,
+        ),
+      ],
+      contentFr: [
+        block(frBody),
+        block(
+          `Chez Bâtir le Pays SARL, la question utile reste toujours de savoir comment cette pratique améliore une décision, un service ou un résultat d'apprentissage réel.`,
+        ),
+      ],
+      category: category === "review" ? "review" : category,
+      categoryRef: { _type: "reference", _ref: categoryRef },
+      tags,
+      author: { _type: "reference", _ref: author._id },
+      publishedAt: now,
+      updatedAt: now,
+      status: "published",
+      featured: false,
+      trending: index < 6,
+      readTime: 4 + (index % 4),
+      contentType,
+      seoTitle: title,
+      seoTitleFr: titleFr,
+      seoDescription: excerpt,
+      seoDescriptionFr: excerptFr,
+    };
+  },
+);
+
 const documents = [
   ...categories,
   author,
@@ -292,6 +588,7 @@ const documents = [
     accentColor: "#0F766E",
   },
   ...posts,
+  ...additionalPosts,
 ];
 
 for (const document of documents) {
