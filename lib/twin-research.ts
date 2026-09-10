@@ -120,9 +120,9 @@ export async function researchWithTavily(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
+        api_key: apiKey,
         query,
         search_depth: "fast",
         topic: "general",
