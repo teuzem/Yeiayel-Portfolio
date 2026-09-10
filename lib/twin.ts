@@ -11,6 +11,7 @@ export interface TwinProfile {
   email?: string | null;
   phone?: string | null;
   profileImageUrl?: string | null;
+  visitorFallbackAvatarUrl?: string | null;
 }
 
 export interface TwinContext {
@@ -220,6 +221,7 @@ export function normalizeProfile(profile: any): TwinProfile | null {
     email: profile.email,
     phone: profile.phone,
     profileImageUrl: profile.profileImageUrl ?? null,
+    visitorFallbackAvatarUrl: profile.visitorFallbackAvatarUrl ?? null,
   };
 }
 

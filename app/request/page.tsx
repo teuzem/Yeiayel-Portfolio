@@ -4,6 +4,7 @@ import { GeoProvider } from "@/components/GeoProvider";
 import { RequestPaymentForm } from "@/components/RequestPaymentForm";
 import type { Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/dictionary";
+import { getEnabledProviders } from "@/lib/payments/config";
 import { buildPriceBreakdown } from "@/lib/pricing";
 import { sanityFetch } from "@/sanity/lib/live";
 
@@ -72,6 +73,9 @@ export default async function RequestServicePage(props: {
 
   const serviceTitle = title ?? "";
   const serviceDescription = shortDescription ?? "";
+  const enabledProviders = getEnabledProviders()
+    .filter((item) => item.enabled)
+    .map((item) => item.id);
 
   return (
     <div className="min-h-screen">
@@ -95,6 +99,8 @@ export default async function RequestServicePage(props: {
             workflow={workflow}
             pricingDescription={service.pricingDescription || ""}
             timeline={service.timeline || ""}
+            priceType={priceType as "hourly" | "project" | "monthly" | "custom"}
+            enabledProviders={enabledProviders}
             locale={locale}
           />
         </GeoProvider>

@@ -31,6 +31,21 @@ export default defineType({
         "Raw webhook payload (JSON) / Données brutes du webhook (JSON)",
     }),
     defineField({
+      name: "orderId",
+      title: "Order ID / Référence",
+      type: "string",
+    }),
+    defineField({
+      name: "paymentStatus",
+      title: "Payment status / Statut du paiement",
+      type: "string",
+    }),
+    defineField({
+      name: "signatureVerified",
+      title: "Signature verified / Signature vérifiée",
+      type: "boolean",
+    }),
+    defineField({
       name: "receivedAt",
       title: "Received At / Reçu le",
       type: "datetime",

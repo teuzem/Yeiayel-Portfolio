@@ -95,17 +95,25 @@ function storeTurns(locale: "en" | "fr", turns: ChatTurn[]): void {
 
 function HumanAvatar({
   src,
+  fallbackSrc,
   label,
   size = "h-9 w-9",
   rounded = "rounded-full",
 }: {
   src?: string | null;
+  fallbackSrc?: string | null;
   label: string;
   size?: string;
   rounded?: string;
 }) {
+  const [activeSrc, setActiveSrc] = useState(src || fallbackSrc || null);
   const monogram = label.trim().charAt(0).toUpperCase() || "?";
-  if (src) {
+
+  useEffect(() => {
+    setActiveSrc(src || fallbackSrc || null);
+  }, [fallbackSrc, src]);
+
+  if (activeSrc) {
     return (
       <div
         className={cn(
@@ -115,11 +123,18 @@ function HumanAvatar({
         )}
       >
         <Image
-          src={src}
+          src={activeSrc}
           alt={label}
           fill
           sizes="40px"
           className="object-cover"
+          onError={() => {
+            if (activeSrc !== fallbackSrc && fallbackSrc) {
+              setActiveSrc(fallbackSrc);
+            } else {
+              setActiveSrc(null);
+            }
+          }}
         />
       </div>
     );
@@ -400,6 +415,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
           >
             <HumanAvatar
               src={user.imageUrl}
+              fallbackSrc={profile?.visitorFallbackAvatarUrl}
               label={customerName}
               size="h-8 w-8"
             />
@@ -567,7 +583,11 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
 
                 {turn.role === "user" &&
                   (user ? (
-                    <HumanAvatar src={user.imageUrl} label={customerName} />
+                    <HumanAvatar
+                      src={user.imageUrl}
+                      fallbackSrc={profile?.visitorFallbackAvatarUrl}
+                      label={customerName}
+                    />
                   ) : (
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-muted text-foreground/50">
                       <User className="h-4 w-4" />

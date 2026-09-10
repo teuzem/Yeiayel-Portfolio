@@ -4,7 +4,9 @@ import { IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useOptionalAuth } from "@/components/AuthProvider";
+import { ModeToggle } from "@/components/DarkModeToggle";
 import { useLocale } from "@/components/LocaleProvider";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { cn } from "@/lib/utils";
 import { DynamicIcon } from "./DynamicIcon";
 import { useSidebar } from "./ui/sidebar";
@@ -89,8 +91,14 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
               key={`${item.title}-${item.href}`}
               item={item}
               isVertical={false}
+              showLabel
             />
           ))}
+
+          <div className="mx-1 flex shrink-0 items-center gap-1 border-x border-black/10 px-2 dark:border-white/15">
+            <LocaleSwitcher />
+            <ModeToggle />
+          </div>
 
           {/* Desktop More Menu Button */}
           {desktop.shouldShowMore && (
@@ -98,9 +106,9 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
               <button
                 type="button"
                 onClick={() => setDesktopMoreMenuOpen(!desktopMoreMenuOpen)}
-                className="group relative flex items-center justify-center w-12 h-12 md:w-12 md:h-12"
+                className="group relative flex min-h-14 w-16 flex-col items-center justify-center gap-1"
               >
-                <div className="relative flex items-center justify-center w-full h-full rounded-full bg-white/10 dark:bg-white/5 group-hover/dock:bg-white/40 dark:group-hover/dock:bg-white/20 backdrop-blur-md border border-white/20 dark:border-white/10 group-hover/dock:border-white/50 dark:group-hover/dock:border-white/30 transition-all duration-500 ease-out hover:scale-125 hover:-translate-y-2 md:hover:-translate-y-3 hover:!bg-white/50 dark:hover:!bg-white/30 hover:!border-white/70 dark:hover:!border-white/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)]">
+                <div className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-md transition-all duration-300 group-hover:bg-white/40 dark:border-white/10 dark:bg-white/5 dark:group-hover:bg-white/20">
                   <div className="w-6 h-6 md:w-6 md:h-6 text-neutral-400/60 group-hover/dock:text-neutral-500 dark:text-neutral-300/60 dark:group-hover/dock:text-neutral-300 group-hover:!text-neutral-600 dark:group-hover:!text-neutral-200 transition-colors duration-300">
                     {desktopMoreMenuOpen ? (
                       <IconX className="w-6 h-6" />
@@ -109,6 +117,9 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
                     )}
                   </div>
                 </div>
+                <span className="w-full truncate text-center text-[11px] font-medium leading-tight text-neutral-700 dark:text-neutral-200">
+                  {dict.nav.more}
+                </span>
                 {/* Tooltip */}
                 <div className="absolute -top-9 md:-top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/20 text-xs md:text-sm font-medium text-neutral-800 dark:text-neutral-200 whitespace-nowrap opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-hover:-translate-y-2 transition-all duration-300 pointer-events-none shadow-[0_8px_32px_0_rgba(0,0,0,0.2)]">
                   {dict.nav.more}
@@ -118,12 +129,14 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
 
               {/* Desktop More Menu - Expands Upward */}
               {desktopMoreMenuOpen && (
-                <div className="absolute bottom-16 left-1/2 z-[100] grid max-h-[min(22rem,calc(100vh-8rem))] w-max max-w-[min(26rem,calc(100vw-2rem))] -translate-x-1/2 grid-cols-2 gap-2 overflow-y-auto rounded-xl border border-white/40 bg-white/90 p-3 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] backdrop-blur-xl [scrollbar-width:none] animate-in slide-in-from-bottom-2 duration-200 dark:border-white/30 dark:bg-black/90 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] [&::-webkit-scrollbar]:hidden">
+                <div className="absolute bottom-16 left-1/2 z-[100] grid w-[min(32rem,calc(100vw-2rem))] -translate-x-1/2 grid-cols-2 gap-2 overflow-visible rounded-xl border border-white/40 bg-white/90 px-4 pb-4 pt-12 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] backdrop-blur-xl animate-in slide-in-from-bottom-2 duration-200 dark:border-white/30 dark:bg-black/90 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)]">
                   {desktop.hidden.map((item) => (
                     <DockIcon
                       key={`${item.title}-${item.href}-more`}
                       item={item}
                       isVertical={true}
+                      showLabel
+                      tooltipDirection="horizontal"
                       onItemClick={() => setDesktopMoreMenuOpen(false)}
                     />
                   ))}
@@ -203,6 +216,11 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
           </div>
         )}
       </div>
+
+      <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 md:hidden">
+        <LocaleSwitcher className="h-10 shadow-md [&_button]:h-7 [&_button]:min-w-10 [&_button]:px-1.5" />
+        <ModeToggle className="h-10 shadow-md [&_button]:h-7 [&_button]:w-7" />
+      </div>
     </>
   );
 }
@@ -211,11 +229,13 @@ function DockIcon({
   item,
   isVertical,
   showLabel = false,
+  tooltipDirection,
   onItemClick,
 }: {
   item: DockLink;
   isVertical: boolean;
   showLabel?: boolean;
+  tooltipDirection?: "vertical" | "horizontal";
   onItemClick?: () => void;
 }) {
   const baseIconClasses =
@@ -276,7 +296,9 @@ function DockIcon({
           {item.title}
         </span>
       ) : null}
-      <Tooltip direction={isVertical ? "vertical" : "horizontal"} />
+      <Tooltip
+        direction={tooltipDirection || (isVertical ? "vertical" : "horizontal")}
+      />
     </>
   );
 

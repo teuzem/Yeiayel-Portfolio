@@ -1,5 +1,24 @@
+import { createHash } from "node:crypto";
 import { PAYMENT_CONFIG } from "./config";
 import type { PaymentRequest, PaymentResult, ProviderConfig } from "./types";
+
+async function paymentFetch(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  timeoutMs = 15_000,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(input, {
+      ...init,
+      cache: "no-store",
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function providerCfg(id: keyof typeof PAYMENT_CONFIG): ProviderConfig {
   const c = PAYMENT_CONFIG[id];
@@ -25,7 +44,7 @@ async function kpayPay(req: PaymentRequest): Promise<PaymentResult> {
     if (req.returnUrl) body.return_url = req.returnUrl;
     if (req.callbackUrl) body.callback_url = req.callbackUrl;
 
-    const res = await fetch(cfg.endpoint, {
+    const res = await paymentFetch(cfg.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -69,7 +88,7 @@ async function giselpayPay(req: PaymentRequest): Promise<PaymentResult> {
       callback_url: req.callbackUrl,
       return_url: req.returnUrl,
     };
-    const res = await fetch(cfg.endpoint, {
+    const res = await paymentFetch(cfg.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,15 +130,15 @@ async function cryptomusPay(req: PaymentRequest): Promise<PaymentResult> {
   try {
     const payload = {
       amount: req.amount.toFixed(2),
-      currency: "USD",
+      currency: req.currency,
       order_id: req.orderId,
       url_callback: req.callbackUrl,
       url_success: req.returnUrl,
       description: req.description,
     };
     const json = JSON.stringify(payload);
-    const sign = await cryptoSign(json, cfg.key);
-    const res = await fetch(cfg.endpoint, {
+    const sign = cryptomusSign(json, cfg.key);
+    const res = await paymentFetch(cfg.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -169,9 +188,9 @@ async function coinbasePay(req: PaymentRequest): Promise<PaymentResult> {
         customer_email: req.customerEmail,
       },
       redirect_url: req.returnUrl,
-      cancel_url: req.returnUrl,
+      cancel_url: req.cancelUrl || req.returnUrl,
     };
-    const res = await fetch(cfg.endpoint, {
+    const res = await paymentFetch(cfg.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -205,21 +224,10 @@ async function coinbasePay(req: PaymentRequest): Promise<PaymentResult> {
   }
 }
 
-// CryptoMus HMAC-SHA256 signature (md5 of json body, hex-encoded with key)
-async function cryptoSign(json: string, key: string): Promise<string> {
-  const msgUint8 = new TextEncoder().encode(json);
-  const keyUint8 = new TextEncoder().encode(key);
-  const keyBuf = await crypto.subtle.importKey(
-    "raw",
-    keyUint8,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", keyBuf, msgUint8);
-  return Array.from(new Uint8Array(sig))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+function cryptomusSign(json: string, key: string): string {
+  return createHash("md5")
+    .update(Buffer.from(json).toString("base64") + key)
+    .digest("hex");
 }
 
 export async function createPayment(

@@ -1,5 +1,6 @@
 import { defineQuery } from "next-sanity";
 import TwinChat from "@/components/chat/TwinChat";
+import { getSiteSettings } from "@/lib/site-settings";
 import { normalizeProfile, type TwinProfile } from "@/lib/twin";
 import { urlFor } from "@/sanity/lib/image";
 import { sanityFetch } from "@/sanity/lib/live";
@@ -36,11 +37,23 @@ function toProfile(data: any): TwinProfile | null {
 }
 
 async function ChatWrapper() {
-  const { data: profile } = await sanityFetch({ query: CHAT_PROFILE_QUERY });
+  const [{ data: profile }, settings] = await Promise.all([
+    sanityFetch({ query: CHAT_PROFILE_QUERY }),
+    getSiteSettings(),
+  ]);
+  const normalized =
+    toProfile(profile) ||
+    (settings.visitorFallbackAvatarUrl
+      ? { visitorFallbackAvatarUrl: settings.visitorFallbackAvatarUrl }
+      : null);
+  if (normalized) {
+    normalized.visitorFallbackAvatarUrl =
+      settings.visitorFallbackAvatarUrl ?? null;
+  }
 
   return (
     <div className="h-full min-h-0 w-full overflow-hidden">
-      <TwinChat profile={toProfile(profile)} />
+      <TwinChat profile={normalized} />
     </div>
   );
 }

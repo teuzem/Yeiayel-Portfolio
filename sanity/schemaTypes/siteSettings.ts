@@ -12,6 +12,11 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: "siteTitleFr",
+      title: "Site Title (French) / Titre du site (français)",
+      type: "string",
+    }),
+    defineField({
       name: "siteDescription",
       title: "Site Description / Description du site",
       type: "text",
@@ -20,11 +25,36 @@ export default defineType({
       validation: (Rule) => Rule.max(160),
     }),
     defineField({
+      name: "siteDescriptionFr",
+      title: "Site Description (French) / Description du site (français)",
+      type: "text",
+      rows: 3,
+      validation: (Rule) => Rule.max(160),
+    }),
+    defineField({
       name: "siteKeywords",
       title: "Site Keywords / Mots-clés du site",
       type: "array",
       of: [{ type: "string" }],
       description: "SEO keywords / Mots-clés SEO",
+    }),
+    defineField({
+      name: "siteKeywordsFr",
+      title: "Site Keywords (French) / Mots-clés du site (français)",
+      type: "array",
+      of: [{ type: "string" }],
+    }),
+    defineField({
+      name: "canonicalUrl",
+      title: "Canonical site URL / URL canonique",
+      type: "url",
+      description: "Production URL, for example https://example.com",
+    }),
+    defineField({
+      name: "robotsIndex",
+      title: "Allow search indexing / Autoriser l'indexation",
+      type: "boolean",
+      initialValue: true,
     }),
     defineField({
       name: "siteLogo",
@@ -39,6 +69,15 @@ export default defineType({
       title: "Favicon / Favicon",
       type: "image",
       description: "32x32 px recommended / 32x32 px recommandé",
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: "visitorFallbackAvatar",
+      title: "Visitor fallback avatar / Avatar visiteur par défaut",
+      type: "image",
+      description:
+        "Used in AI chat when a Clerk or Google account has no usable profile image.",
+      options: { hotspot: true },
     }),
     defineField({
       name: "ogImage",

@@ -1,5 +1,5 @@
-import { AlertTriangle, Check, Clock } from "lucide-react";
 import Link from "next/link";
+import { ServiceConfirmationStatus } from "@/components/ServiceConfirmationStatus";
 import type { Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/dictionary";
 
@@ -8,6 +8,7 @@ export default async function ConfirmationPage(props: {
     order?: string;
     status?: string;
     locale?: string;
+    quote?: string;
   }>;
 }) {
   const searchParams = await props.searchParams;
@@ -16,31 +17,30 @@ export default async function ConfirmationPage(props: {
   const dict = getDictionary(locale);
   const status = searchParams.status || "pending";
   const order = searchParams.order || "";
-
-  const message =
+  const quote = searchParams.quote === "1";
+  const initialStatus =
     status === "success"
-      ? dict.confirmation.success
+      ? "paid"
       : status === "failed"
-        ? dict.confirmation.failed
-        : dict.confirmation.pending;
-
-  const StatusIcon =
-    status === "success" ? Check : status === "failed" ? AlertTriangle : Clock;
+        ? "payment-failed"
+        : quote
+          ? "quote-requested"
+          : "payment-pending";
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-16">
       <div className="max-w-xl w-full bg-card border rounded-2xl p-8 md:p-12 text-center">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-          <StatusIcon
-            className={`h-10 w-10 ${
-              status === "success"
-                ? "text-emerald-500"
-                : status === "failed"
-                  ? "text-red-500"
-                  : "text-muted-foreground"
-            }`}
-          />
-        </div>
+        <ServiceConfirmationStatus
+          orderId={order}
+          initialStatus={initialStatus}
+          quote={quote}
+          messages={{
+            success: dict.confirmation.success,
+            failed: dict.confirmation.failed,
+            pending: dict.confirmation.pending,
+            quote: dict.confirmation.quote,
+          }}
+        />
         <h1 className="text-3xl md:text-4xl font-bold mb-3">
           {dict.confirmation.title}
         </h1>
@@ -56,8 +56,6 @@ export default async function ConfirmationPage(props: {
             <span className="font-mono font-semibold">{order}</span>
           </div>
         )}
-
-        <p className="text-base text-muted-foreground mb-2">{message}</p>
 
         <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 mb-8 text-left">
           <p className="font-semibold mb-1">{dict.confirmation.whatNow}</p>

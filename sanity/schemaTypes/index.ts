@@ -10,6 +10,7 @@ import paymentWebhook from "./paymentWebhook";
 import profile from "./profile";
 import project from "./project";
 import service from "./service";
+import serviceRequest from "./serviceRequest";
 import siteSettings from "./siteSettings";
 import skill from "./skill";
 import testimonial from "./testimonial";
@@ -27,6 +28,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     achievement,
     blog,
     service,
+    serviceRequest,
     contact,
     siteSettings,
     navigation,

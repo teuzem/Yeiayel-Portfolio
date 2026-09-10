@@ -261,6 +261,7 @@ export const dict = {
       projectDescription: "Project description",
       selectedService: "Selected service",
       submitRequest: "Submit request & pay",
+      submitQuote: "Submit request for a quote",
     },
     footer: {
       madeWith: "Built with Next.js & Sanity CMS",
@@ -270,6 +271,8 @@ export const dict = {
       subtitle: "Your request has been received.",
       pending:
         "Your payment is being processed. We will confirm your order shortly.",
+      quote:
+        "Your quote request has been recorded. We will review the project brief and contact you with the next steps.",
       success:
         "Your payment was successful. We will get in touch with you shortly to start your project.",
       failed:
@@ -563,6 +566,7 @@ export const dict = {
       projectDescription: "Description du projet",
       selectedService: "Service sélectionné",
       submitRequest: "Soumettre la demande & payer",
+      submitQuote: "Envoyer une demande de devis",
     },
     footer: {
       madeWith: "Conçu avec Next.js & Sanity CMS",
@@ -572,6 +576,8 @@ export const dict = {
       subtitle: "Votre demande a été reçue.",
       pending:
         "Votre paiement est en cours de traitement. Nous confirmerons votre commande sous peu.",
+      quote:
+        "Votre demande de devis a été enregistrée. Nous examinerons le projet et vous contacterons pour la suite.",
       success:
         "Votre paiement a réussi. Nous vous contacterons bientôt pour démarrer votre projet.",
       failed:

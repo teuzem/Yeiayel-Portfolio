@@ -2,8 +2,9 @@
 
 import { ChevronRight, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { createServicePayment } from "@/app/actions/create-service-payment";
+import { useOptionalAuth } from "@/components/AuthProvider";
 import { useGeo } from "@/components/GeoProvider";
 import type { Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/dictionary";
@@ -19,6 +20,8 @@ interface RequestPaymentFormProps {
   workflow: string[];
   pricingDescription: string;
   timeline: string;
+  priceType: "hourly" | "project" | "monthly" | "custom";
+  enabledProviders: PaymentProvider[];
   locale: Locale;
 }
 
@@ -38,20 +41,29 @@ export function RequestPaymentForm({
   workflow,
   pricingDescription,
   timeline,
+  priceType,
+  enabledProviders,
   locale,
 }: RequestPaymentFormProps) {
   const dict = getDictionary(locale);
   const router = useRouter();
   const { isLocal } = useGeo();
+  const { user } = useOptionalAuth();
   const [isPending, startTransition] = useTransition();
-  const [provider, setProvider] = useState<PaymentProvider>("kpay");
+  const [provider, setProvider] = useState<PaymentProvider>(
+    enabledProviders[0] || "kpay",
+  );
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [error, setError] = useState("");
 
-  const priceType = breakdown?.priceType ?? "project";
+  useEffect(() => {
+    if (!user) return;
+    setCustomerName((current) => current || user.fullName || "");
+    setCustomerEmail((current) => current || user.primaryEmail || "");
+  }, [user]);
 
   const price = breakdown
     ? isLocal
@@ -67,7 +79,14 @@ export function RequestPaymentForm({
   const paymentCurrency =
     currency === "XAF" || currency === "EUR" || currency === "USDT"
       ? currency
-      : "USD";
+      : currency === "USD"
+        ? "USD"
+        : null;
+  const isQuote =
+    priceType === "custom" ||
+    !breakdown ||
+    !paymentCurrency ||
+    enabledProviders.length === 0;
 
   const providerLabel = (p: PaymentProvider) => {
     const base: Record<PaymentProvider, string> = {
@@ -83,7 +102,7 @@ export function RequestPaymentForm({
     e.preventDefault();
     setError("");
 
-    if (!breakdown || price <= 0) {
+    if (!isQuote && price <= 0) {
       setError(dict.payment.payError);
       return;
     }
@@ -92,7 +111,7 @@ export function RequestPaymentForm({
       const result = await createServicePayment({
         provider,
         amount: price,
-        currency: paymentCurrency,
+        currency: paymentCurrency || "USD",
         serviceTitle,
         serviceSlug,
         customerName: customerName || undefined,
@@ -100,6 +119,9 @@ export function RequestPaymentForm({
         customerPhone: customerPhone || undefined,
         projectDescription: projectDescription || undefined,
         isLocal,
+        priceType,
+        locale,
+        skipPayment: isQuote && priceType !== "custom",
       });
 
       if (result.success && result.checkoutUrl) {
@@ -189,7 +211,9 @@ export function RequestPaymentForm({
         onSubmit={handleSubmit}
         className="bg-card border rounded-lg p-6 space-y-4"
       >
-        <h2 className="text-xl font-semibold">{dict.payment.selectMethod}</h2>
+        <h2 className="text-xl font-semibold">
+          {isQuote ? dict.services.customQuote : dict.payment.selectMethod}
+        </h2>
 
         <div>
           <label htmlFor="rf-name" className="block text-sm font-medium mb-2">
@@ -258,32 +282,38 @@ export function RequestPaymentForm({
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">
-            {dict.payment.selectMethod}
-          </h2>
-          <div className="space-y-2">
-            {PROVIDERS.map((p) => (
-              <label
-                key={p}
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  provider === p
-                    ? "border-primary bg-primary/5"
-                    : "hover:bg-muted"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="provider"
-                  value={p}
-                  checked={provider === p}
-                  onChange={() => setProvider(p)}
-                  disabled={isPending}
-                  className="accent-primary"
-                />
-                <span className="text-sm">{providerLabel(p)}</span>
-              </label>
-            ))}
-          </div>
+          {!isQuote && (
+            <>
+              <h2 className="text-lg font-semibold mb-2">
+                {dict.payment.selectMethod}
+              </h2>
+              <div className="space-y-2">
+                {PROVIDERS.filter((p) => enabledProviders.includes(p)).map(
+                  (p) => (
+                    <label
+                      key={p}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        provider === p
+                          ? "border-primary bg-primary/5"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="provider"
+                        value={p}
+                        checked={provider === p}
+                        onChange={() => setProvider(p)}
+                        disabled={isPending}
+                        className="accent-primary"
+                      />
+                      <span className="text-sm">{providerLabel(p)}</span>
+                    </label>
+                  ),
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {error && (
@@ -297,7 +327,11 @@ export function RequestPaymentForm({
           disabled={isPending}
           className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isPending ? dict.payment.processing : dict.workflow.submitRequest}
+          {isPending
+            ? dict.payment.processing
+            : isQuote
+              ? dict.workflow.submitQuote
+              : dict.workflow.submitRequest}
         </button>
 
         <p className="text-xs text-muted-foreground text-center">

@@ -12,12 +12,15 @@ export interface PaymentRequest {
   customerEmail?: string;
   customerPhone?: string;
   returnUrl?: string;
+  cancelUrl?: string;
   callbackUrl?: string;
 }
 
 export interface PaymentResult {
   success: boolean;
   provider: PaymentProvider;
+  orderId?: string;
+  requiresQuote?: boolean;
   checkoutUrl?: string;
   paymentId?: string;
   reference?: string;
