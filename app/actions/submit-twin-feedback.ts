@@ -11,6 +11,9 @@ export interface TwinFeedbackInput {
   answer: string;
   source?: "openai" | "openrouter" | "local";
   model?: string;
+  researched?: boolean;
+  researchProvider?: "tavily";
+  researchSourceCount?: number;
 }
 
 export async function submitTwinFeedback(
@@ -34,6 +37,7 @@ export async function submitTwinFeedback(
     await serverClient.createIfNotExists({
       _id: `twinFeedback-${messageId.replace(/[^a-zA-Z0-9_-]/g, "-")}`,
       _type: "twinFeedback",
+      feedbackType: "message",
       messageId,
       rating,
       locale,
@@ -41,6 +45,12 @@ export async function submitTwinFeedback(
       answer,
       source: input.source || "local",
       model: input.model?.trim().slice(0, 160),
+      researched: Boolean(input.researched),
+      researchProvider: input.researchProvider,
+      researchSourceCount: Math.max(
+        0,
+        Math.min(20, Math.round(input.researchSourceCount || 0)),
+      ),
       submittedAt: new Date().toISOString(),
       status: "new",
     });

@@ -4,11 +4,19 @@ import {
   buildLocalKnowledgeResponse,
   buildSystemPrompt,
   type ChatMessage,
+  type TwinFeedbackProfile,
   type TwinLocale,
   type TwinProfile,
   toProviderMessages,
 } from "@/lib/twin";
 import { buildTwinKnowledgeFromSanity } from "@/lib/twin-context";
+import {
+  type ResearchSource,
+  researchPrompt,
+  researchWithTavily,
+  shouldResearch,
+  unavailableResearchPrompt,
+} from "@/lib/twin-research";
 
 export interface TwinChatResponse {
   ok: boolean;
@@ -16,6 +24,10 @@ export interface TwinChatResponse {
   source: "openai" | "openrouter" | "local";
   model?: string;
   usingRealContext: boolean;
+  researched?: boolean;
+  researchAttempted?: boolean;
+  researchProvider?: "tavily";
+  sources?: ResearchSource[];
 }
 
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/responses";
@@ -88,10 +100,50 @@ function normalizeProfile(profile?: TwinProfile | null): TwinProfile | null {
   };
 }
 
+function normalizeFeedback(
+  feedback?: TwinFeedbackProfile | null,
+): TwinFeedbackProfile | undefined {
+  if (!feedback) return undefined;
+  const count = (value: number | undefined) =>
+    typeof value === "number" && Number.isFinite(value)
+      ? Math.max(0, Math.min(10_000, Math.round(value)))
+      : 0;
+  const averageRating =
+    typeof feedback.averageRating === "number" &&
+    Number.isFinite(feedback.averageRating)
+      ? Math.max(1, Math.min(5, feedback.averageRating))
+      : undefined;
+  const latestNote =
+    typeof feedback.latestNote === "string"
+      ? feedback.latestNote.trim().slice(0, 600)
+      : undefined;
+
+  return {
+    averageRating,
+    latestNote,
+    helpfulCount: count(feedback.helpfulCount),
+    notHelpfulCount: count(feedback.notHelpfulCount),
+  };
+}
+
 function responseLanguageReminder(locale: TwinLocale): string {
   return locale === "fr"
     ? "Rappel final : réponds uniquement en français naturel et ne mélange aucune phrase anglaise."
     : "Final reminder: answer only in natural English and do not mix in French sentences.";
+}
+
+function buildResearchFallback(
+  locale: TwinLocale,
+  hasSources: boolean,
+): string {
+  if (locale === "fr") {
+    return hasSources
+      ? "J'ai trouvé des sources web pertinentes, mais je n'ai pas pu terminer une synthèse fiable. Consultez les sources vérifiées ci-dessous ; je préfère ne pas transformer leurs extraits en affirmations sans validation supplémentaire."
+      : "Je n'ai pas pu obtenir de source web vérifiable pour cette question en temps réel. Je préfère ne pas inventer de faits. Précisez l'identité, l'organisation, le lieu ou la période recherchée, puis relancez la question.";
+  }
+  return hasSources
+    ? "I found relevant web sources, but I could not complete a reliable synthesis. Review the verified sources below; I will not turn their excerpts into claims without further validation."
+    : "I could not obtain a verifiable live web source for this question. I will not invent facts. Confirm the exact identity, organization, location, or time period, then retry with those details.";
 }
 
 function parseOpenAIText(data: unknown): string {
@@ -236,6 +288,7 @@ export async function chatWithTwin(
   rawMessages: ChatMessage[],
   clientProfile?: TwinProfile | null,
   requestedLocale: TwinLocale = "en",
+  clientFeedback?: TwinFeedbackProfile | null,
 ): Promise<TwinChatResponse> {
   const locale: TwinLocale = requestedLocale === "fr" ? "fr" : "en";
   const messages = normalizeMessages(rawMessages);
@@ -264,12 +317,40 @@ export async function chatWithTwin(
     };
   }
 
-  const system = buildSystemPrompt(profile, context, locale);
   const configuredBudget = Number(process.env.TWIN_CHAT_TIMEOUT_MS);
   const budgetMs = Number.isFinite(configuredBudget)
     ? Math.max(10_000, Math.min(55_000, configuredBudget))
     : DEFAULT_REQUEST_BUDGET_MS;
   const deadline = Date.now() + budgetMs;
+  const researchAttempted = shouldResearch(lastQuestion);
+  const configuredResearchTimeout = Number(
+    process.env.TWIN_RESEARCH_TIMEOUT_MS,
+  );
+  const researchTimeoutMs = Number.isFinite(configuredResearchTimeout)
+    ? Math.max(2_000, Math.min(10_000, configuredResearchTimeout))
+    : 7_000;
+  const research = researchAttempted
+    ? await researchWithTavily(
+        lastQuestion,
+        locale,
+        Math.min(
+          researchTimeoutMs,
+          Math.max(2_000, deadline - Date.now() - 8_000),
+        ),
+      )
+    : null;
+  const researchContext = research
+    ? researchPrompt(research)
+    : researchAttempted
+      ? unavailableResearchPrompt(locale)
+      : undefined;
+  const system = buildSystemPrompt(
+    profile,
+    context,
+    locale,
+    normalizeFeedback(clientFeedback),
+    researchContext,
+  );
   const failures: string[] = [];
   const remainingTimeout = () =>
     Math.max(1_000, Math.min(PER_ATTEMPT_TIMEOUT_MS, deadline - Date.now()));
@@ -297,6 +378,10 @@ export async function chatWithTwin(
           source: "openai",
           model,
           usingRealContext,
+          researched: Boolean(research),
+          researchAttempted,
+          researchProvider: research?.provider,
+          sources: research?.sources,
         };
       } catch (error) {
         failures.push(error instanceof Error ? error.message : "OpenAI failed");
@@ -329,6 +414,10 @@ export async function chatWithTwin(
           source: "openrouter",
           model,
           usingRealContext,
+          researched: Boolean(research),
+          researchAttempted,
+          researchProvider: research?.provider,
+          sources: research?.sources,
         };
       } catch (error) {
         failures.push(
@@ -343,15 +432,18 @@ export async function chatWithTwin(
     console.warn(`AI Twin provider failover exhausted: ${failures.join("; ")}`);
   }
 
+  const fallbackMessage = researchAttempted
+    ? buildResearchFallback(locale, Boolean(research))
+    : buildLocalKnowledgeResponse(lastQuestion, profile, context, locale);
+
   return {
     ok: true,
-    message: buildLocalKnowledgeResponse(
-      lastQuestion,
-      profile,
-      context,
-      locale,
-    ),
+    message: fallbackMessage,
     source: "local",
     usingRealContext,
+    researched: Boolean(research),
+    researchAttempted,
+    researchProvider: research?.provider,
+    sources: research?.sources,
   };
 }

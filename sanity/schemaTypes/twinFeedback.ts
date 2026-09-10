@@ -21,7 +21,13 @@ export default defineType({
       name: "messageId",
       title: "Message ID",
       type: "string",
-      validation: (Rule) => Rule.required(),
+      hidden: ({ document }) => document?.feedbackType === "review",
+      validation: (Rule) =>
+        Rule.custom((messageId, context) =>
+          context.document?.feedbackType === "review" || messageId
+            ? true
+            : "Message ID is required for message feedback.",
+        ),
     }),
     defineField({
       name: "rating",
@@ -102,6 +108,26 @@ export default defineType({
       type: "string",
     }),
     defineField({
+      name: "researched",
+      title: "Used live research / Recherche web utilisée",
+      type: "boolean",
+      initialValue: false,
+    }),
+    defineField({
+      name: "researchProvider",
+      title: "Research provider / Fournisseur de recherche",
+      type: "string",
+      options: {
+        list: [{ title: "Tavily", value: "tavily" }],
+      },
+    }),
+    defineField({
+      name: "researchSourceCount",
+      title: "Research source count / Nombre de sources",
+      type: "number",
+      validation: (Rule) => Rule.min(0).max(20),
+    }),
+    defineField({
       name: "submittedAt",
       title: "Submitted at / Soumis le",
       type: "datetime",
@@ -122,10 +148,19 @@ export default defineType({
   ],
   preview: {
     select: {
+      feedbackType: "feedbackType",
       title: "rating",
       subtitle: "question",
+      score: "score",
+      note: "note",
     },
-    prepare({ title, subtitle }) {
+    prepare({ feedbackType, title, subtitle, score, note }) {
+      if (feedbackType === "review" || title === "review") {
+        return {
+          title: `Conversation review: ${score || "?"}/5`,
+          subtitle: note || "No written note",
+        };
+      }
       return {
         title:
           title === "helpful"

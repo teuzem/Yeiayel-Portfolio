@@ -195,6 +195,12 @@ export const dict = {
       helpful: "Helpful",
       notHelpful: "Not helpful",
       feedbackThanks: "Feedback saved",
+      feedbackSavedLocally:
+        "Feedback applied to this conversation; cloud storage is unavailable.",
+      researching: "Thinking and checking sources...",
+      verifiedSources: "Verified web sources",
+      researchUnavailable:
+        "Live verification was requested, but no web source was available for this response.",
       reviewTitle: "How was your AI Twin experience?",
       reviewSubtitle:
         "You have asked five questions. Rate the conversation and share a note.",
@@ -203,6 +209,15 @@ export const dict = {
       reviewLater: "Later",
       reviewSubmit: "Send review",
       reviewSending: "Sending...",
+      reviewThanksHigh:
+        "Thank you. I will preserve the clarity and strengths you valued in future answers.",
+      reviewThanksMedium:
+        "Thank you. I will make the next answers more direct, specific, and useful.",
+      reviewThanksLow:
+        "Thank you for the candid review. I will verify claims more carefully, reduce ambiguity, and support factual answers with sources.",
+      reviewSaved: "Your review was securely submitted.",
+      reviewSavedLocally:
+        "Your review is already improving this conversation, but cloud storage is not currently configured.",
       editProfile: "Edit your profile",
       connectionError:
         "The conversation request was interrupted before I could answer. Retry this question.",
@@ -500,6 +515,12 @@ export const dict = {
       helpful: "Utile",
       notHelpful: "Pas utile",
       feedbackThanks: "Retour enregistré",
+      feedbackSavedLocally:
+        "Le retour est appliqué à cette conversation ; le stockage cloud est indisponible.",
+      researching: "Réflexion et vérification des sources...",
+      verifiedSources: "Sources web vérifiées",
+      researchUnavailable:
+        "Une vérification en direct était nécessaire, mais aucune source web n'était disponible pour cette réponse.",
       reviewTitle: "Comment s'est passée votre expérience avec le jumeau IA ?",
       reviewSubtitle:
         "Vous avez posé cinq questions. Notez la conversation et laissez un commentaire.",
@@ -508,6 +529,15 @@ export const dict = {
       reviewLater: "Plus tard",
       reviewSubmit: "Envoyer l'avis",
       reviewSending: "Envoi...",
+      reviewThanksHigh:
+        "Merci. Je conserverai la clarté et les points forts que vous avez appréciés dans mes prochaines réponses.",
+      reviewThanksMedium:
+        "Merci. Je rendrai mes prochaines réponses plus directes, précises et utiles.",
+      reviewThanksLow:
+        "Merci pour cet avis sincère. Je vérifierai les affirmations plus rigoureusement, réduirai les ambiguïtés et appuierai les réponses factuelles sur des sources.",
+      reviewSaved: "Votre avis a été envoyé de manière sécurisée.",
+      reviewSavedLocally:
+        "Votre avis améliore déjà cette conversation, mais le stockage cloud n'est pas configuré actuellement.",
       editProfile: "Modifier votre profil",
       connectionError:
         "La requête de conversation a été interrompue avant ma réponse. Relancez cette question.",

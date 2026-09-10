@@ -2,7 +2,9 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ExternalLink,
   RotateCcw,
+  Search,
   Send,
   Star,
   ThumbsDown,
@@ -23,7 +25,7 @@ import { useOptionalAuth } from "@/components/AuthProvider";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 import { useLocale } from "@/components/LocaleProvider";
 import { useSidebar } from "@/components/ui/sidebar";
-import type { TwinProfile } from "@/lib/twin";
+import type { TwinFeedbackProfile, TwinProfile } from "@/lib/twin";
 import { cn } from "@/lib/utils";
 
 interface ChatTurn {
@@ -34,11 +36,23 @@ interface ChatTurn {
   source?: TwinChatResponse["source"];
   model?: string;
   feedback?: TwinFeedbackInput["rating"];
+  feedbackPersisted?: boolean;
+  researched?: boolean;
+  researchAttempted?: boolean;
+  researchProvider?: TwinChatResponse["researchProvider"];
+  sources?: TwinChatResponse["sources"];
+  reviewAcknowledgement?: boolean;
+}
+
+interface StoredFeedbackProfile extends TwinFeedbackProfile {
+  reviewCount: number;
+  ratingTotal: number;
 }
 
 const QUICK_PROMPTS = ["experience", "skills", "built", "whoAreYou"] as const;
 const MEMORY_PREFIX = "yeiayel-ai-twin-history-v2";
 const REVIEW_PREFIX = "yeiayel-ai-twin-review-v1";
+const FEEDBACK_PROFILE_PREFIX = "yeiayel-ai-twin-feedback-profile-v1";
 const MAX_STORED_TURNS = 40;
 
 function createTurnId(role: ChatTurn["role"]): string {
@@ -51,6 +65,65 @@ function memoryKey(locale: "en" | "fr"): string {
 
 function reviewKey(locale: "en" | "fr", userId?: string | null): string {
   return `${REVIEW_PREFIX}-${locale}-${userId || "guest"}`;
+}
+
+function feedbackProfileKey(
+  locale: "en" | "fr",
+  userId?: string | null,
+): string {
+  return `${FEEDBACK_PROFILE_PREFIX}-${locale}-${userId || "guest"}`;
+}
+
+function emptyFeedbackProfile(): StoredFeedbackProfile {
+  return {
+    reviewCount: 0,
+    ratingTotal: 0,
+    helpfulCount: 0,
+    notHelpfulCount: 0,
+  };
+}
+
+function readFeedbackProfile(
+  locale: "en" | "fr",
+  userId?: string | null,
+): StoredFeedbackProfile {
+  try {
+    const value = window.localStorage.getItem(
+      feedbackProfileKey(locale, userId),
+    );
+    if (!value) return emptyFeedbackProfile();
+    const parsed = JSON.parse(value) as Partial<StoredFeedbackProfile>;
+    const reviewCount = Math.max(0, Number(parsed.reviewCount) || 0);
+    const ratingTotal = Math.max(0, Number(parsed.ratingTotal) || 0);
+    return {
+      reviewCount,
+      ratingTotal,
+      averageRating: reviewCount ? ratingTotal / reviewCount : undefined,
+      latestNote:
+        typeof parsed.latestNote === "string"
+          ? parsed.latestNote.slice(0, 600)
+          : undefined,
+      helpfulCount: Math.max(0, Number(parsed.helpfulCount) || 0),
+      notHelpfulCount: Math.max(0, Number(parsed.notHelpfulCount) || 0),
+    };
+  } catch {
+    return emptyFeedbackProfile();
+  }
+}
+
+function storeFeedbackProfile(
+  locale: "en" | "fr",
+  userId: string | null | undefined,
+  profile: StoredFeedbackProfile,
+): void {
+  try {
+    window.localStorage.setItem(
+      feedbackProfileKey(locale, userId),
+      JSON.stringify(profile),
+    );
+  } catch {
+    // The in-memory profile continues improving the active conversation.
+  }
 }
 
 function readStoredTurns(locale: "en" | "fr"): ChatTurn[] {
@@ -171,6 +244,9 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewNote, setReviewNote] = useState("");
   const [reviewBusy, setReviewBusy] = useState(false);
+  const [reviewDismissedUntil, setReviewDismissedUntil] = useState(0);
+  const [feedbackProfile, setFeedbackProfile] =
+    useState<StoredFeedbackProfile>(emptyFeedbackProfile);
 
   const ownerName =
     [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") ||
@@ -211,14 +287,20 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
     setReviewOpen(false);
     setReviewRating(0);
     setReviewNote("");
+    setReviewDismissedUntil(0);
+    setFeedbackProfile(readFeedbackProfile(locale, user?.id));
   }, [locale, user?.id]);
 
   useEffect(() => {
     const questionCount = turns.filter((turn) => turn.role === "user").length;
-    if (questionCount >= 5 && !reviewSubmitted) {
+    if (
+      questionCount >= 5 &&
+      questionCount > reviewDismissedUntil &&
+      !reviewSubmitted
+    ) {
       setReviewOpen(true);
     }
-  }, [reviewSubmitted, turns]);
+  }, [reviewDismissedUntil, reviewSubmitted, turns]);
 
   useEffect(() => {
     if (!memoryReady || loadedMemoryLocale.current !== locale) return;
@@ -262,6 +344,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
         next.map((t) => ({ role: t.role, content: t.content })),
         profile,
         requestLocale,
+        feedbackProfile,
       );
       if (
         requestId !== requestSequence.current ||
@@ -278,6 +361,10 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
           error: !result.ok,
           source: result.source,
           model: result.model,
+          researched: result.researched,
+          researchAttempted: result.researchAttempted,
+          researchProvider: result.researchProvider,
+          sources: result.sources,
         },
       ]);
     } catch {
@@ -332,6 +419,16 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
     }
   };
 
+  const updateFeedbackProfile = (
+    update: (current: StoredFeedbackProfile) => StoredFeedbackProfile,
+  ) => {
+    setFeedbackProfile((current) => {
+      const next = update(current);
+      storeFeedbackProfile(locale, user?.id, next);
+      return next;
+    });
+  };
+
   const sendFeedback = async (
     turn: ChatTurn,
     rating: TwinFeedbackInput["rating"],
@@ -349,8 +446,15 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
         item.id === turn.id ? { ...item, feedback: rating } : item,
       ),
     );
+    updateFeedbackProfile((current) => ({
+      ...current,
+      helpfulCount:
+        (current.helpfulCount || 0) + (rating === "helpful" ? 1 : 0),
+      notHelpfulCount:
+        (current.notHelpfulCount || 0) + (rating === "not-helpful" ? 1 : 0),
+    }));
     try {
-      await submitTwinFeedback({
+      const result = await submitTwinFeedback({
         messageId: turn.id,
         rating,
         locale,
@@ -358,9 +462,23 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
         answer: turn.content,
         source: turn.source,
         model: turn.model,
+        researched: turn.researched,
+        researchProvider: turn.researchProvider,
+        researchSourceCount: turn.sources?.length,
       });
+      setTurns((current) =>
+        current.map((item) =>
+          item.id === turn.id
+            ? { ...item, feedbackPersisted: result.persisted }
+            : item,
+        ),
+      );
     } catch {
-      // The local vote remains recorded and the conversation is unaffected.
+      setTurns((current) =>
+        current.map((item) =>
+          item.id === turn.id ? { ...item, feedbackPersisted: false } : item,
+        ),
+      );
     }
   };
 
@@ -368,7 +486,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
     if (reviewBusy || !reviewRating) return;
     setReviewBusy(true);
     try {
-      await submitTwinReview({
+      const result = await submitTwinReview({
         rating: reviewRating,
         note: reviewNote,
         locale,
@@ -377,6 +495,14 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
         userName: user?.fullName || undefined,
         userEmail: user?.primaryEmail || undefined,
       });
+      updateFeedbackProfile((current) => ({
+        ...current,
+        reviewCount: current.reviewCount + 1,
+        ratingTotal: current.ratingTotal + reviewRating,
+        averageRating:
+          (current.ratingTotal + reviewRating) / (current.reviewCount + 1),
+        latestNote: reviewNote.trim().slice(0, 600) || current.latestNote,
+      }));
       try {
         window.localStorage.setItem(reviewKey(locale, user?.id), "submitted");
       } catch {
@@ -384,6 +510,24 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
       }
       setReviewSubmitted(true);
       setReviewOpen(false);
+      const response =
+        reviewRating >= 4
+          ? dict.chat.reviewThanksHigh
+          : reviewRating === 3
+            ? dict.chat.reviewThanksMedium
+            : dict.chat.reviewThanksLow;
+      const persistence = result.persisted
+        ? dict.chat.reviewSaved
+        : dict.chat.reviewSavedLocally;
+      setTurns((current) => [
+        ...current,
+        {
+          id: createTurnId("assistant"),
+          role: "assistant",
+          content: `${response}\n\n${persistence}`,
+          reviewAcknowledgement: true,
+        },
+      ]);
     } finally {
       setReviewBusy(false);
     }
@@ -528,6 +672,37 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
                   ) : (
                     <>
                       <ChatMarkdown content={turn.content} />
+                      {turn.sources?.length ? (
+                        <div className="mt-3 border-t border-border/50 pt-2.5">
+                          <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold text-foreground">
+                            <Search className="h-3.5 w-3.5 text-primary" />
+                            {dict.chat.verifiedSources}
+                          </p>
+                          <div className="grid gap-1.5">
+                            {turn.sources.map((source, sourceIndex) => (
+                              <a
+                                key={`${turn.id}-${source.url}`}
+                                href={source.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-background/70 px-2.5 py-2 text-xs text-foreground transition-colors hover:border-primary/40 hover:bg-muted"
+                              >
+                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary/10 text-[10px] font-semibold text-primary">
+                                  {sourceIndex + 1}
+                                </span>
+                                <span className="min-w-0 flex-1 truncate">
+                                  {source.title}
+                                </span>
+                                <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      ) : turn.researchAttempted ? (
+                        <p className="mt-2 border-t border-border/50 pt-2 text-[10px] text-muted-foreground">
+                          {dict.chat.researchUnavailable}
+                        </p>
+                      ) : null}
                       {turn.error && retryText && i === turns.length - 1 ? (
                         <button
                           type="button"
@@ -538,11 +713,13 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
                           {dict.chat.retry}
                         </button>
                       ) : null}
-                      {!turn.error ? (
+                      {!turn.error && !turn.reviewAcknowledgement ? (
                         <div className="mt-2 flex items-center gap-1 border-t border-border/50 pt-2">
                           <span className="mr-1 text-[10px] text-muted-foreground">
                             {turn.feedback
-                              ? dict.chat.feedbackThanks
+                              ? turn.feedbackPersisted === false
+                                ? dict.chat.feedbackSavedLocally
+                                : dict.chat.feedbackThanks
                               : dict.chat.wasHelpful}
                           </span>
                           <button
@@ -647,7 +824,13 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
               <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <button
                   type="button"
-                  onClick={() => setReviewOpen(false)}
+                  onClick={() => {
+                    const questionCount = turns.filter(
+                      (turn) => turn.role === "user",
+                    ).length;
+                    setReviewDismissedUntil(questionCount + 2);
+                    setReviewOpen(false);
+                  }}
                   className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   {dict.chat.reviewLater}
@@ -682,6 +865,9 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
                     style={{ animationDelay: `${d * 150}ms` }}
                   />
                 ))}
+                <span className="ml-2 text-[11px] text-muted-foreground">
+                  {dict.chat.researching}
+                </span>
               </div>
             </motion.div>
           )}
