@@ -14,6 +14,16 @@ export interface ResearchResult {
 }
 
 const TAVILY_ENDPOINT = "https://api.tavily.com/search";
+const MAX_RESEARCH_QUERY_LENGTH = 1_000;
+
+interface TavilyResponse {
+  answer?: unknown;
+  results?: Array<{
+    title?: unknown;
+    url?: unknown;
+    content?: unknown;
+  }>;
+}
 
 function safeUrl(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -112,37 +122,59 @@ export async function researchWithTavily(
   const apiKey = process.env.TAVILY_API_KEY?.trim();
   if (!apiKey) return null;
   const country = process.env.TWIN_RESEARCH_COUNTRY?.trim().toLowerCase();
+  const safeQuery = query.trim().slice(0, MAX_RESEARCH_QUERY_LENGTH);
+  if (!safeQuery) return null;
+  const deadline = Date.now() + timeoutMs;
+  let data: TavilyResponse | null = null;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const remainingMs = deadline - Date.now();
+    if (remainingMs < 1_000) break;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), remainingMs);
+    try {
+      const response = await fetch(TAVILY_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          api_key: apiKey,
+          query: safeQuery,
+          search_depth: "fast",
+          topic: "general",
+          max_results: 5,
+          include_answer: "basic",
+          include_raw_content: false,
+          ...(country ? { country } : {}),
+        }),
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      if (response.ok) {
+        data = (await response.json()) as TavilyResponse;
+        break;
+      }
+      const retryable = response.status === 429 || response.status >= 500;
+      console.warn(
+        `AI Twin Tavily search returned HTTP ${response.status} (attempt ${attempt}).`,
+      );
+      if (!retryable) break;
+    } catch (error) {
+      const reason = error instanceof Error ? error.name : "UnknownError";
+      console.warn(
+        `AI Twin Tavily search failed with ${reason} (attempt ${attempt}).`,
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+    if (attempt === 1 && deadline - Date.now() > 1_250) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+
+  if (!data) return null;
   try {
-    const response = await fetch(TAVILY_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        api_key: apiKey,
-        query,
-        search_depth: "fast",
-        topic: "general",
-        max_results: 5,
-        include_answer: "basic",
-        include_raw_content: false,
-        ...(country ? { country } : {}),
-      }),
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    if (!response.ok) return null;
-    const data = (await response.json()) as {
-      answer?: unknown;
-      results?: Array<{
-        title?: unknown;
-        url?: unknown;
-        content?: unknown;
-      }>;
-    };
     const sources = (data.results || [])
       .map((result): ResearchSource | null => {
         const url = safeUrl(result.url);
@@ -164,7 +196,7 @@ export async function researchWithTavily(
 
     if (!sources.length) return null;
     return {
-      query,
+      query: safeQuery,
       summary:
         typeof data.answer === "string"
           ? data.answer.slice(0, 3_000)
@@ -174,10 +206,10 @@ export async function researchWithTavily(
       sources,
       provider: "tavily",
     };
-  } catch {
+  } catch (error) {
+    const reason = error instanceof Error ? error.name : "UnknownError";
+    console.warn(`AI Twin Tavily response parsing failed with ${reason}.`);
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }
 
