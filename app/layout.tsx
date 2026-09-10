@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { PwaRegister } from "@/components/PwaRegister";
 import { getServerLocale } from "@/components/server-context";
-import { getSiteSettings } from "@/lib/site-settings";
+import { getSiteSettings, getSiteUrl } from "@/lib/site-settings";
 import "./globals.css";
 
 const fallbackTitle = "NGOUMTSOP TEUZEM Yeiayel | Data Scientist & AI Engineer";
@@ -26,11 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
     (isFr ? settings.siteKeywordsFr : settings.siteKeywords) ||
     settings.siteKeywords ||
     [];
-  const siteUrl =
-    settings.canonicalUrl ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000";
-  const metadataBase = new URL(siteUrl);
+  const metadataBase = new URL(getSiteUrl(settings));
   const images = settings.ogImageUrl ? [settings.ogImageUrl] : [];
 
   return {

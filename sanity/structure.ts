@@ -120,6 +120,37 @@ export const structure: StructureResolver = (S) =>
                 .child(S.documentTypeList("blog").title("Blog Posts")),
 
               S.listItem()
+                .title("Blog Categories")
+                .icon(TagIcon)
+                .schemaType("blogCategory")
+                .child(
+                  S.documentTypeList("blogCategory").title("Blog Categories"),
+                ),
+
+              S.listItem()
+                .title("Blog Authors")
+                .icon(UserIcon)
+                .schemaType("blogAuthor")
+                .child(S.documentTypeList("blogAuthor").title("Blog Authors")),
+
+              S.listItem()
+                .title("Product Reviews")
+                .icon(StarIcon)
+                .schemaType("blogProduct")
+                .child(
+                  S.documentTypeList("blogProduct").title("Product Reviews"),
+                ),
+
+              S.listItem()
+                .title("Blog Settings")
+                .icon(CogIcon)
+                .child(
+                  S.document()
+                    .schemaType("blogSettings")
+                    .documentId("singleton-blogSettings"),
+                ),
+
+              S.listItem()
                 .title("Testimonials")
                 .icon(CommentIcon)
                 .schemaType("testimonial")

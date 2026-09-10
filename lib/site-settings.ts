@@ -14,7 +14,8 @@ const SITE_SETTINGS_QUERY = defineQuery(`*[_type == "siteSettings"][0]{
   robotsIndex,
   favicon,
   ogImage,
-  visitorFallbackAvatar
+  visitorFallbackAvatar,
+  accentColor
 }`);
 
 export interface SiteSettings {
@@ -30,6 +31,7 @@ export interface SiteSettings {
   faviconUrl?: string | null;
   ogImageUrl?: string | null;
   visitorFallbackAvatarUrl?: string | null;
+  accentColor?: string | null;
 }
 
 export async function getSiteSettings(): Promise<SiteSettings> {
@@ -60,4 +62,16 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     ogImageUrl: imageUrl(data.ogImage, 1200, 630),
     visitorFallbackAvatarUrl: imageUrl(data.visitorFallbackAvatar, 160, 160),
   };
+}
+
+export function getSiteUrl(settings?: SiteSettings): string {
+  const candidate =
+    settings?.canonicalUrl ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "http://localhost:3000";
+  try {
+    return new URL(candidate).origin;
+  } catch {
+    return "http://localhost:3000";
+  }
 }

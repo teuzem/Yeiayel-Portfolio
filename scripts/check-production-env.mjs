@@ -50,6 +50,12 @@ const checks = [
     optional: true,
   },
   {
+    label: "Sanity instant publishing webhook",
+    ok: configured("SANITY_REVALIDATE_SECRET"),
+    variables: ["SANITY_REVALIDATE_SECRET"],
+    optional: true,
+  },
+  {
     label: "Clerk authentication",
     ok:
       configured("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY") &&

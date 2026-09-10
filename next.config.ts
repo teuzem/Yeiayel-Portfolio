@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Keep the normal ".next" directory in production. A distinct, local build
+  // directory avoids colliding with an actively running development server.
+  distDir: process.env.NEXT_DIST_DIR?.trim() || ".next",
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,

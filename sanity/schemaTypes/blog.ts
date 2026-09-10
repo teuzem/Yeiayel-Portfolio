@@ -1,140 +1,345 @@
-import { defineField, defineType } from "sanity";
+import { defineArrayMember, defineField, defineType } from "sanity";
 
 export default defineType({
   name: "blog",
-  title: "Blog Posts / Articles de blog",
+  title: "Blog Post / Article de blog",
   type: "document",
+  groups: [
+    { name: "content", title: "Content / Contenu", default: true },
+    { name: "fr", title: "French / Français" },
+    { name: "editorial", title: "Editorial & SEO / Éditorial & SEO" },
+  ],
   fields: [
     defineField({
       name: "title",
       title: "Title (EN) / Titre (EN)",
       type: "string",
-      validation: (Rule) => Rule.required(),
+      validation: (Rule) => Rule.required().max(120),
+      group: "content",
     }),
     defineField({
       name: "titleFr",
       title: "Title (FR) / Titre (FR)",
       type: "string",
-      description:
-        "French translation of the title / Traduction française du titre",
+      validation: (Rule) => Rule.max(120),
+      group: "fr",
     }),
     defineField({
       name: "slug",
       title: "Slug / Identifiant",
       type: "slug",
-      options: {
-        source: "title",
-        maxLength: 96,
-      },
+      options: { source: "title", maxLength: 96 },
       validation: (Rule) => Rule.required(),
+      group: "content",
     }),
     defineField({
       name: "excerpt",
       title: "Excerpt (EN) / Extrait (EN)",
       type: "text",
       rows: 3,
-      description:
-        "Brief summary for preview cards (EN) / Résumé pour les cartes d'aperçu (EN)",
-      validation: (Rule) => Rule.max(200),
+      validation: (Rule) => Rule.max(320),
+      group: "content",
     }),
     defineField({
       name: "excerptFr",
       title: "Excerpt (FR) / Extrait (FR)",
       type: "text",
       rows: 3,
-      description:
-        "French summary for preview cards / Résumé en français pour les cartes d'aperçu",
-      validation: (Rule) => Rule.max(220),
+      validation: (Rule) => Rule.max(320),
+      group: "fr",
+    }),
+    defineField({
+      name: "content",
+      title: "Article body (EN) / Corps de l'article (EN)",
+      type: "array",
+      of: [
+        defineArrayMember({
+          type: "block",
+          styles: [
+            { title: "Normal", value: "normal" },
+            { title: "Heading 2", value: "h2" },
+            { title: "Heading 3", value: "h3" },
+            { title: "Quote", value: "blockquote" },
+          ],
+          lists: [
+            { title: "Bullet", value: "bullet" },
+            { title: "Number", value: "number" },
+          ],
+          marks: {
+            annotations: [
+              {
+                name: "link",
+                type: "object",
+                title: "Link / Lien",
+                fields: [
+                  {
+                    name: "href",
+                    type: "url",
+                    title: "URL",
+                    validation: (Rule) =>
+                      Rule.uri({ scheme: ["https", "http", "mailto"] }),
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+        defineArrayMember({
+          type: "image",
+          options: { hotspot: true },
+          fields: [{ name: "alt", title: "Alt text", type: "string" }],
+        }),
+      ],
+      group: "content",
+    }),
+    defineField({
+      name: "contentFr",
+      title: "Article body (FR) / Corps de l'article (FR)",
+      type: "array",
+      of: [
+        defineArrayMember({
+          type: "block",
+          styles: [
+            { title: "Normal", value: "normal" },
+            { title: "Heading 2", value: "h2" },
+            { title: "Heading 3", value: "h3" },
+            { title: "Quote", value: "blockquote" },
+          ],
+          lists: [
+            { title: "Bullet", value: "bullet" },
+            { title: "Number", value: "number" },
+          ],
+        }),
+        defineArrayMember({
+          type: "image",
+          options: { hotspot: true },
+          fields: [{ name: "alt", title: "Alt text", type: "string" }],
+        }),
+      ],
+      group: "fr",
     }),
     defineField({
       name: "featuredImage",
-      title: "Featured Image / Image à la une",
+      title: "Featured image / Image à la une",
       type: "image",
-      options: {
-        hotspot: true,
-      },
+      options: { hotspot: true },
       fields: [
         {
           name: "alt",
           type: "string",
-          title: "Alternative Text / Texte alternatif",
+          title: "Alternative text / Texte alternatif",
         },
+        { name: "caption", type: "string", title: "Caption / Légende" },
       ],
+      group: "content",
     }),
     defineField({
       name: "category",
-      title: "Category / Catégorie",
+      title: "Legacy category / Catégorie existante",
       type: "string",
       options: {
         list: [
-          { title: "Tutorial / Tutoriel", value: "tutorial" },
-          { title: "Technical / Technique", value: "technical" },
-          { title: "AI/ML / IA-ML", value: "ai-ml" },
-          {
-            title: "Web Development / Développement Web",
-            value: "web-dev",
-          },
-          { title: "Career / Carrière", value: "career" },
-          { title: "Opinion / Opinion", value: "opinion" },
-          {
-            title: "Project Showcase / Présentation de projet",
-            value: "showcase",
-          },
-          {
-            title: "Best Practices / Bonnes pratiques",
-            value: "best-practices",
-          },
-          { title: "News / Actualités", value: "news" },
+          { title: "Data Science", value: "data-science" },
+          { title: "Artificial Intelligence", value: "ai-ml" },
+          { title: "Data Analysis", value: "data-analysis" },
+          { title: "Software Engineering", value: "web-dev" },
+          { title: "Cloud, DevOps & Security", value: "cloud-security" },
+          { title: "Career & Education", value: "career" },
+          { title: "Product Review", value: "review" },
+          { title: "Bâtir le Pays SARL", value: "batir-le-pays" },
         ],
       },
+      group: "content",
+    }),
+    defineField({
+      name: "categoryRef",
+      title: "Editorial category / Catégorie éditoriale",
+      type: "reference",
+      to: [{ type: "blogCategory" }],
+      group: "content",
     }),
     defineField({
       name: "tags",
       title: "Tags / Étiquettes",
       type: "array",
       of: [{ type: "string" }],
-      options: {
-        layout: "tags",
-      },
+      options: { layout: "tags" },
+      group: "content",
+    }),
+    defineField({
+      name: "author",
+      title: "Author / Auteur",
+      type: "reference",
+      to: [{ type: "blogAuthor" }],
+      group: "content",
+    }),
+    defineField({
+      name: "product",
+      title: "Reviewed product / Produit évalué",
+      type: "reference",
+      to: [{ type: "blogProduct" }],
+      hidden: ({ document }) => document?.contentType !== "Review",
+      group: "content",
     }),
     defineField({
       name: "publishedAt",
-      title: "Published Date / Date de publication",
+      title: "Published date / Date de publication",
       type: "datetime",
       validation: (Rule) => Rule.required(),
+      group: "editorial",
+    }),
+    defineField({
+      name: "updatedAt",
+      title: "Last updated / Dernière mise à jour",
+      type: "datetime",
+      group: "editorial",
+    }),
+    defineField({
+      name: "status",
+      title: "Publishing status / Statut de publication",
+      type: "string",
+      options: {
+        list: [
+          { title: "Draft / Brouillon", value: "draft" },
+          { title: "In review / En révision", value: "review" },
+          { title: "Scheduled / Planifié", value: "scheduled" },
+          { title: "Published / Publié", value: "published" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "draft",
+      validation: (Rule) => Rule.required(),
+      group: "editorial",
+    }),
+    defineField({
+      name: "featured",
+      title: "Featured / À la une",
+      type: "boolean",
+      initialValue: false,
+      group: "editorial",
+    }),
+    defineField({
+      name: "trending",
+      title: "Trending / Tendance",
+      type: "boolean",
+      initialValue: false,
+      group: "editorial",
     }),
     defineField({
       name: "readTime",
-      title: "Read Time (minutes) / Temps de lecture (minutes)",
+      title: "Read time (minutes) / Temps de lecture (minutes)",
       type: "number",
-      description: "Estimated reading time / Temps de lecture estimé",
+      validation: (Rule) => Rule.integer().positive().max(120),
+      group: "editorial",
+    }),
+    defineField({
+      name: "contentType",
+      title: "Content type / Type de contenu",
+      type: "string",
+      options: {
+        list: [
+          { title: "Article", value: "Article" },
+          { title: "Tutorial / Tutoriel", value: "HowTo" },
+          { title: "Guide", value: "Guide" },
+          { title: "Review / Évaluation", value: "Review" },
+          { title: "News / Actualité", value: "NewsArticle" },
+          { title: "Opinion", value: "Opinion" },
+        ],
+      },
+      initialValue: "Article",
+      group: "editorial",
+    }),
+    defineField({
+      name: "seoTitle",
+      title: "SEO title (EN)",
+      type: "string",
+      validation: (Rule) => Rule.max(70),
+      group: "editorial",
+    }),
+    defineField({
+      name: "seoTitleFr",
+      title: "SEO title (FR)",
+      type: "string",
+      validation: (Rule) => Rule.max(70),
+      group: "editorial",
+    }),
+    defineField({
+      name: "seoDescription",
+      title: "SEO description (EN)",
+      type: "text",
+      rows: 3,
+      validation: (Rule) => Rule.max(170),
+      group: "editorial",
+    }),
+    defineField({
+      name: "seoDescriptionFr",
+      title: "SEO description (FR)",
+      type: "text",
+      rows: 3,
+      validation: (Rule) => Rule.max(170),
+      group: "editorial",
+    }),
+    defineField({
+      name: "ogImage",
+      title: "Open Graph image / Image Open Graph",
+      type: "image",
+      options: { hotspot: true },
+      group: "editorial",
+    }),
+    defineField({
+      name: "noIndex",
+      title: "Hide from search engines / Masquer des moteurs",
+      type: "boolean",
+      initialValue: false,
+      group: "editorial",
+    }),
+    defineField({
+      name: "sources",
+      title: "Editorial sources / Sources éditoriales",
+      type: "array",
+      of: [
+        defineArrayMember({
+          type: "object",
+          fields: [
+            { name: "title", title: "Title / Titre", type: "string" },
+            { name: "publisher", title: "Publisher / Éditeur", type: "string" },
+            {
+              name: "url",
+              title: "URL",
+              type: "url",
+              validation: (Rule) => Rule.uri({ scheme: ["https"] }),
+            },
+            {
+              name: "accessedAt",
+              title: "Accessed on / Consultée le",
+              type: "date",
+            },
+          ],
+        }),
+      ],
+      group: "editorial",
     }),
   ],
   preview: {
     select: {
       title: "title",
+      titleFr: "titleFr",
       media: "featuredImage",
-      category: "category",
+      status: "status",
     },
-    prepare(selection) {
-      const { title, media, category } = selection;
+    prepare({ title, titleFr, media, status }) {
       return {
-        title: title,
-        subtitle: category || "Uncategorized / Non catégorisé",
-        media: media,
+        title: title || titleFr || "Untitled post",
+        subtitle: status || "draft",
+        media,
       };
     },
   },
   orderings: [
     {
-      title: "Published Date, Newest / Plus récents d'abord",
+      title: "Published date, newest first",
       name: "publishedDesc",
       by: [{ field: "publishedAt", direction: "desc" }],
-    },
-    {
-      title: "Published Date, Oldest / Plus anciens d'abord",
-      name: "publishedAsc",
-      by: [{ field: "publishedAt", direction: "asc" }],
     },
   ],
 });

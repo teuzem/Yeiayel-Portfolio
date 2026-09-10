@@ -31,6 +31,7 @@ NEXT_PUBLIC_SANITY_STUDIO_URL=https://your-domain.example/studio
 SANITY_STUDIO_PREVIEW_ORIGIN=https://your-domain.example/studio
 SANITY_SERVER_API_TOKEN=your-sanity-server-token
 SANITY_VIEWER_TOKEN=your-sanity-viewer-token
+SANITY_REVALIDATE_SECRET=your-long-random-webhook-secret
 
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
 CLERK_SECRET_KEY=sk_live_...
@@ -75,3 +76,16 @@ research. Configure both OpenAI and OpenRouter for provider failover.
 If the environment check reports Tavily as missing, the variable is not
 available to the build process. Re-enter it in the application environment
 settings, save, rebuild, and restart. Never commit production secrets to Git.
+
+## Publish blog updates immediately
+
+Create a Sanity webhook for document create, update, and delete events that
+sends a POST request to:
+
+```text
+https://your-domain.example/api/revalidate/sanity?secret=your-long-random-webhook-secret
+```
+
+Set the `x-sanity-revalidate-secret` header to the same secret. Valid requests
+refresh the portfolio, blog, metadata, and sitemap cache; a missing or invalid
+secret returns `401`.

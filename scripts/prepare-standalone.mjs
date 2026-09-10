@@ -2,7 +2,8 @@ import { cpSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const root = process.cwd();
-const standalone = join(root, ".next", "standalone");
+const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
+const standalone = join(root, distDir, "standalone");
 
 if (!existsSync(join(standalone, "server.js"))) {
   throw new Error(
@@ -18,7 +19,7 @@ function copyDirectory(source, destination) {
 
 copyDirectory(join(root, "public"), join(standalone, "public"));
 copyDirectory(
-  join(root, ".next", "static"),
+  join(root, distDir, "static"),
   join(standalone, ".next", "static"),
 );
 
