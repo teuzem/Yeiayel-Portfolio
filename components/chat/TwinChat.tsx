@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   RotateCcw,
   Send,
+  Star,
   ThumbsDown,
   ThumbsUp,
   Trash2,
@@ -16,7 +17,9 @@ import {
   submitTwinFeedback,
   type TwinFeedbackInput,
 } from "@/app/actions/submit-twin-feedback";
+import { submitTwinReview } from "@/app/actions/submit-twin-review";
 import { chatWithTwin, type TwinChatResponse } from "@/app/actions/twin-chat";
+import { useOptionalAuth } from "@/components/AuthProvider";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 import { useLocale } from "@/components/LocaleProvider";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -35,6 +38,7 @@ interface ChatTurn {
 
 const QUICK_PROMPTS = ["experience", "skills", "built", "whoAreYou"] as const;
 const MEMORY_PREFIX = "yeiayel-ai-twin-history-v2";
+const REVIEW_PREFIX = "yeiayel-ai-twin-review-v1";
 const MAX_STORED_TURNS = 40;
 
 function createTurnId(role: ChatTurn["role"]): string {
@@ -43,6 +47,10 @@ function createTurnId(role: ChatTurn["role"]): string {
 
 function memoryKey(locale: "en" | "fr"): string {
   return `${MEMORY_PREFIX}-${locale}`;
+}
+
+function reviewKey(locale: "en" | "fr", userId?: string | null): string {
+  return `${REVIEW_PREFIX}-${locale}-${userId || "guest"}`;
 }
 
 function readStoredTurns(locale: "en" | "fr"): ChatTurn[] {
@@ -131,6 +139,7 @@ function HumanAvatar({
 
 export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   const { dict, locale } = useLocale();
+  const { user, openUserProfile } = useOptionalAuth();
   const { isMobile, setOpen, setOpenMobile } = useSidebar();
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState("");
@@ -142,6 +151,11 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
   const requestSequence = useRef(0);
   const [retryText, setRetryText] = useState("");
   const [memoryReady, setMemoryReady] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewNote, setReviewNote] = useState("");
+  const [reviewBusy, setReviewBusy] = useState(false);
 
   const ownerName =
     [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") ||
@@ -169,6 +183,27 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
     loadedMemoryLocale.current = locale;
     setMemoryReady(true);
   }, [locale]);
+
+  useEffect(() => {
+    try {
+      setReviewSubmitted(
+        window.localStorage.getItem(reviewKey(locale, user?.id)) ===
+          "submitted",
+      );
+    } catch {
+      setReviewSubmitted(false);
+    }
+    setReviewOpen(false);
+    setReviewRating(0);
+    setReviewNote("");
+  }, [locale, user?.id]);
+
+  useEffect(() => {
+    const questionCount = turns.filter((turn) => turn.role === "user").length;
+    if (questionCount >= 5 && !reviewSubmitted) {
+      setReviewOpen(true);
+    }
+  }, [reviewSubmitted, turns]);
 
   useEffect(() => {
     if (!memoryReady || loadedMemoryLocale.current !== locale) return;
@@ -314,11 +349,40 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
     }
   };
 
+  const submitReview = async () => {
+    if (reviewBusy || !reviewRating) return;
+    setReviewBusy(true);
+    try {
+      await submitTwinReview({
+        rating: reviewRating,
+        note: reviewNote,
+        locale,
+        questionCount: turns.filter((turn) => turn.role === "user").length,
+        userId: user?.id,
+        userName: user?.fullName || undefined,
+        userEmail: user?.primaryEmail || undefined,
+      });
+      try {
+        window.localStorage.setItem(reviewKey(locale, user?.id), "submitted");
+      } catch {
+        // The submitted state still remains active for this session.
+      }
+      setReviewSubmitted(true);
+      setReviewOpen(false);
+    } finally {
+      setReviewBusy(false);
+    }
+  };
+
+  const customerName = user?.fullName || user?.primaryEmail || dict.chat.you;
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-background text-foreground md:border-r md:border-border/60">
       {/* ── Header ─────────────────────────────────────────── */}
       <header className="flex shrink-0 items-center gap-3 border-b border-border/60 bg-background px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4">
-        <HumanAvatar src={profile?.profileImageUrl} label={ownerName} />
+        <div className="shrink-0">
+          <HumanAvatar src={profile?.profileImageUrl} label={ownerName} />
+        </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{ownerName}</p>
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -326,6 +390,21 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
             {dict.chat.availableOnline}
           </p>
         </div>
+        {user ? (
+          <button
+            type="button"
+            onClick={openUserProfile}
+            className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={dict.chat.editProfile}
+            title={dict.chat.editProfile}
+          >
+            <HumanAvatar
+              src={user.imageUrl}
+              label={customerName}
+              size="h-8 w-8"
+            />
+          </button>
+        ) : null}
         {turns.length ? (
           <button
             type="button"
@@ -486,14 +565,86 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
                   )}
                 </div>
 
-                {turn.role === "user" && (
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-muted text-foreground/50">
-                    <User className="h-4 w-4" />
-                  </div>
-                )}
+                {turn.role === "user" &&
+                  (user ? (
+                    <HumanAvatar src={user.imageUrl} label={customerName} />
+                  ) : (
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border/70 bg-muted text-foreground/50">
+                      <User className="h-4 w-4" />
+                    </div>
+                  ))}
               </motion.div>
             ))
           )}
+
+          {reviewOpen ? (
+            <motion.section
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm"
+              aria-labelledby="twin-review-title"
+            >
+              <div className="mb-3">
+                <p id="twin-review-title" className="text-sm font-semibold">
+                  {dict.chat.reviewTitle}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {dict.chat.reviewSubtitle}
+                </p>
+              </div>
+              <div
+                className="mb-3 flex items-center gap-1"
+                role="radiogroup"
+                aria-label={dict.chat.reviewRating}
+              >
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setReviewRating(value)}
+                    className="rounded-md p-1 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`${value} / 5`}
+                    aria-pressed={reviewRating === value}
+                  >
+                    <Star
+                      className={cn(
+                        "h-7 w-7",
+                        value <= reviewRating
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-muted-foreground/40",
+                      )}
+                    />
+                  </button>
+                ))}
+              </div>
+              <textarea
+                value={reviewNote}
+                onChange={(event) => setReviewNote(event.target.value)}
+                maxLength={2_000}
+                placeholder={dict.chat.reviewPlaceholder}
+                className="min-h-20 w-full resize-y rounded-xl border border-border/60 bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setReviewOpen(false)}
+                  className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  {dict.chat.reviewLater}
+                </button>
+                <button
+                  type="button"
+                  onClick={submitReview}
+                  disabled={!reviewRating || reviewBusy}
+                  className="rounded-lg bg-foreground px-3 py-2 text-sm text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {reviewBusy
+                    ? dict.chat.reviewSending
+                    : dict.chat.reviewSubmit}
+                </button>
+              </div>
+            </motion.section>
+          ) : null}
 
           {busy && (
             <motion.div

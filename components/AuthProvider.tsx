@@ -7,7 +7,14 @@ interface AuthContextValue {
   enabled: boolean;
   isLoaded: boolean;
   isSignedIn: boolean;
+  user: {
+    id: string;
+    fullName: string | null;
+    imageUrl: string;
+    primaryEmail: string | null;
+  } | null;
   openSignIn: () => void;
+  openUserProfile: () => void;
   signOut: () => Promise<void>;
 }
 
@@ -15,26 +22,37 @@ const disabledAuth: AuthContextValue = {
   enabled: false,
   isLoaded: true,
   isSignedIn: false,
+  user: null,
   openSignIn: () => undefined,
+  openUserProfile: () => undefined,
   signOut: async () => undefined,
 };
 
 const AuthContext = createContext<AuthContextValue>(disabledAuth);
 
 function ClerkAuthBridge({ children }: { children: ReactNode }) {
-  const { isLoaded, isSignedIn } = useUser();
-  const { openSignIn, signOut } = useClerk();
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { openSignIn, openUserProfile, signOut } = useClerk();
   const value = useMemo<AuthContextValue>(
     () => ({
       enabled: true,
       isLoaded,
       isSignedIn: Boolean(isSignedIn),
+      user: user
+        ? {
+            id: user.id,
+            fullName: user.fullName,
+            imageUrl: user.imageUrl,
+            primaryEmail: user.primaryEmailAddress?.emailAddress ?? null,
+          }
+        : null,
       openSignIn: () => openSignIn(),
+      openUserProfile: () => openUserProfile(),
       signOut: async () => {
         await signOut();
       },
     }),
-    [isLoaded, isSignedIn, openSignIn, signOut],
+    [isLoaded, isSignedIn, openSignIn, openUserProfile, signOut, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

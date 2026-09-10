@@ -195,6 +195,15 @@ export const dict = {
       helpful: "Helpful",
       notHelpful: "Not helpful",
       feedbackThanks: "Feedback saved",
+      reviewTitle: "How was your AI Twin experience?",
+      reviewSubtitle:
+        "You have asked five questions. Rate the conversation and share a note.",
+      reviewRating: "Conversation rating",
+      reviewPlaceholder: "What should the AI Twin improve?",
+      reviewLater: "Later",
+      reviewSubmit: "Send review",
+      reviewSending: "Sending...",
+      editProfile: "Edit your profile",
       connectionError:
         "The conversation request was interrupted before I could answer. Retry this question.",
       fallbackNotice:
@@ -488,6 +497,15 @@ export const dict = {
       helpful: "Utile",
       notHelpful: "Pas utile",
       feedbackThanks: "Retour enregistré",
+      reviewTitle: "Comment s'est passée votre expérience avec le jumeau IA ?",
+      reviewSubtitle:
+        "Vous avez posé cinq questions. Notez la conversation et laissez un commentaire.",
+      reviewRating: "Note de la conversation",
+      reviewPlaceholder: "Que devrait améliorer le jumeau IA ?",
+      reviewLater: "Plus tard",
+      reviewSubmit: "Envoyer l'avis",
+      reviewSending: "Envoi...",
+      editProfile: "Modifier votre profil",
       connectionError:
         "La requête de conversation a été interrompue avant ma réponse. Relancez cette question.",
       fallbackNotice:
