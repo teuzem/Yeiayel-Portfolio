@@ -40,6 +40,7 @@ interface ChatTurn {
   researched?: boolean;
   researchAttempted?: boolean;
   researchProvider?: TwinChatResponse["researchProvider"];
+  researchStatus?: TwinChatResponse["researchStatus"];
   sources?: TwinChatResponse["sources"];
   reviewAcknowledgement?: boolean;
 }
@@ -341,7 +342,11 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
     scrollToBottom();
     try {
       const result: TwinChatResponse = await chatWithTwin(
-        next.map((t) => ({ role: t.role, content: t.content })),
+        next.map((t) => ({
+          role: t.role,
+          content: t.content,
+          webResearch: t.researched === true,
+        })),
         profile,
         requestLocale,
         feedbackProfile,
@@ -364,6 +369,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
           researched: result.researched,
           researchAttempted: result.researchAttempted,
           researchProvider: result.researchProvider,
+          researchStatus: result.researchStatus,
           sources: result.sources,
         },
       ]);

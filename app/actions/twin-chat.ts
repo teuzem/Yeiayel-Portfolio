@@ -11,7 +11,10 @@ import {
 } from "@/lib/twin";
 import { buildTwinKnowledgeFromSanity } from "@/lib/twin-context";
 import {
+  isResearchFollowUp,
   type ResearchSource,
+  type ResearchStatus,
+  researchFailureMessage,
   researchPrompt,
   researchWithTavily,
   shouldResearch,
@@ -27,6 +30,7 @@ export interface TwinChatResponse {
   researched?: boolean;
   researchAttempted?: boolean;
   researchProvider?: "tavily";
+  researchStatus?: ResearchStatus;
   sources?: ResearchSource[];
 }
 
@@ -67,7 +71,11 @@ function normalizeMessages(messages: ChatMessage[]): ChatMessage[] {
         typeof message?.content === "string"
           ? message.content.trim().slice(0, MAX_MESSAGE_LENGTH)
           : "";
-      return { role, content };
+      return {
+        role,
+        content,
+        webResearch: message?.webResearch === true,
+      };
     })
     .filter((message) => {
       if (!message.content || totalLength >= MAX_TOTAL_LENGTH) return false;
@@ -144,6 +152,20 @@ function buildResearchFallback(
   return hasSources
     ? "I found relevant web sources, but I could not complete a reliable synthesis. Review the verified sources below; I will not turn their excerpts into claims without further validation."
     : "I could not obtain a verifiable live web source for this question. I will not invent facts. Confirm the exact identity, organization, location, or time period, then retry with those details.";
+}
+
+function researchQueryForConversation(
+  messages: ChatMessage[],
+  question: string,
+  isFollowUp: boolean,
+): string {
+  if (!isFollowUp) return question;
+  const previousQuestion = [...messages.slice(0, -1)]
+    .reverse()
+    .find((message) => message.role === "user")?.content;
+
+  if (!previousQuestion) return question;
+  return `Previous researched topic: ${previousQuestion}\nFollow-up question: ${question}`;
 }
 
 function parseOpenAIText(data: unknown): string {
@@ -322,28 +344,52 @@ export async function chatWithTwin(
     ? Math.max(10_000, Math.min(55_000, configuredBudget))
     : DEFAULT_REQUEST_BUDGET_MS;
   const deadline = Date.now() + budgetMs;
-  const researchAttempted = shouldResearch(lastQuestion);
+  const hasRecentWebResearch = messages
+    .slice(-6, -1)
+    .some((message) => message.webResearch);
+  const followUpResearch =
+    hasRecentWebResearch && isResearchFollowUp(lastQuestion);
+  const researchAttempted = shouldResearch(lastQuestion) || followUpResearch;
   const configuredResearchTimeout = Number(
     process.env.TWIN_RESEARCH_TIMEOUT_MS,
   );
   const researchTimeoutMs = Number.isFinite(configuredResearchTimeout)
     ? Math.max(2_000, Math.min(10_000, configuredResearchTimeout))
     : 7_000;
-  const research = researchAttempted
+  const researchLookup = researchAttempted
     ? await researchWithTavily(
-        lastQuestion,
+        researchQueryForConversation(messages, lastQuestion, followUpResearch),
         locale,
         Math.min(
           researchTimeoutMs,
           Math.max(2_000, deadline - Date.now() - 8_000),
         ),
       )
-    : null;
+    : { result: null, status: "not-requested" as const };
+  const research = researchLookup.result;
   const researchContext = research
     ? researchPrompt(research)
     : researchAttempted
       ? unavailableResearchPrompt(locale)
       : undefined;
+
+  if (researchAttempted && !research) {
+    const failureStatus =
+      researchLookup.status === "success" ||
+      researchLookup.status === "not-requested"
+        ? "failed"
+        : researchLookup.status;
+    return {
+      ok: true,
+      message: researchFailureMessage(locale, failureStatus),
+      source: "local",
+      usingRealContext,
+      researched: false,
+      researchAttempted: true,
+      researchStatus: researchLookup.status,
+    };
+  }
+
   const system = buildSystemPrompt(
     profile,
     context,
@@ -381,6 +427,7 @@ export async function chatWithTwin(
           researched: Boolean(research),
           researchAttempted,
           researchProvider: research?.provider,
+          researchStatus: researchLookup.status,
           sources: research?.sources,
         };
       } catch (error) {
@@ -417,6 +464,7 @@ export async function chatWithTwin(
           researched: Boolean(research),
           researchAttempted,
           researchProvider: research?.provider,
+          researchStatus: researchLookup.status,
           sources: research?.sources,
         };
       } catch (error) {
@@ -444,6 +492,7 @@ export async function chatWithTwin(
     researched: Boolean(research),
     researchAttempted,
     researchProvider: research?.provider,
+    researchStatus: researchLookup.status,
     sources: research?.sources,
   };
 }

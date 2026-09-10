@@ -29,6 +29,7 @@ export interface TwinContext {
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  webResearch?: boolean;
 }
 
 export interface TwinFeedbackProfile {
