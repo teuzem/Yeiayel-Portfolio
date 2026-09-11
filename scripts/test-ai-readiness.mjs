@@ -23,6 +23,8 @@ const fixture = {
 };
 
 assert.equal(shouldResearch("Who is Prof NGUEFACK TSAGUES Georges?"), true);
+assert.equal(shouldResearch("Who is Paul Biya?"), true);
+assert.equal(shouldResearch("Who is the current president of Cameroon?"), true);
 assert.equal(
   shouldResearch("Can you look this person up online and cite sources?"),
   true,

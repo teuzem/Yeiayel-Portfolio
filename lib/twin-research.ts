@@ -152,7 +152,9 @@ function optimizedResearchQuery(question: string, country?: string): string {
   const whoCameroon =
     (/\boms\b/.test(normalized) ||
       normalized.includes("world health organization") ||
-      /\bwho\b/.test(normalized)) &&
+      /\bwho\s+(?:representative|office|country\s+office)\b/.test(
+        normalized,
+      )) &&
     (normalized.includes("cameroun") || normalized.includes("cameroon"));
   const biographyIntent = [
     "biograph",
@@ -580,7 +582,7 @@ export async function researchWithTavily(
   const deadline = Date.now() + timeoutMs;
   let data: TavilyResponse | null = null;
 
-  for (let attempt = 1; attempt <= (directUrls.length ? 0 : 2); attempt += 1) {
+  for (let attempt = 1; attempt <= (directUrls.length ? 0 : 3); attempt += 1) {
     const remainingMs = deadline - Date.now();
     if (remainingMs < 1_000) break;
 
@@ -595,13 +597,15 @@ export async function researchWithTavily(
         body: JSON.stringify({
           api_key: apiKey,
           query: safeQuery,
-          search_depth: searchDepth,
-          ...(searchDepth === "advanced" ? { chunks_per_source: 3 } : {}),
+          search_depth: attempt === 1 ? searchDepth : "basic",
+          ...(attempt === 1 && searchDepth === "advanced"
+            ? { chunks_per_source: 3 }
+            : {}),
           topic: newsQuery ? "news" : "general",
           ...(newsQuery ? { days: todayQuery ? 1 : 7 } : {}),
           max_results: MAX_RESEARCH_SOURCES,
-          include_answer: "advanced",
-          include_raw_content: "markdown",
+          include_answer: attempt === 1 ? "advanced" : "basic",
+          include_raw_content: attempt === 1 ? "markdown" : false,
           ...(country && !newsQuery ? { country } : {}),
         }),
         cache: "no-store",
@@ -741,9 +745,34 @@ export async function researchWithTavily(
       })
       .slice(0, MAX_RESEARCH_SOURCES);
 
-    if (!sources.length) return { result: null, status: "no-sources" };
+    // Tavily can return authoritative pages whose snippets omit one part of
+    // a multi-word name. Keep the highest-ranked pages instead of reporting a
+    // false no-source result for a valid entity query.
+    const fallbackSources =
+      sources.length || !entityTerms.length
+        ? sources
+        : (data.results || [])
+            .map((result): ResearchSource | null => {
+              const url = safeUrl(result.url);
+              if (!url) return null;
+              return {
+                title:
+                  typeof result.title === "string"
+                    ? result.title.slice(0, 180)
+                    : new URL(url).hostname,
+                url,
+                snippet:
+                  typeof result.content === "string"
+                    ? result.content.slice(0, 1_500)
+                    : undefined,
+              };
+            })
+            .filter((source): source is ResearchSource => source !== null)
+            .slice(0, 3);
+
+    if (!fallbackSources.length) return { result: null, status: "no-sources" };
     const extractionBudget = deadline - Date.now();
-    const sourcesNeedingExtraction = sources
+    const sourcesNeedingExtraction = fallbackSources
       .filter((source) => (source.snippet?.length || 0) < 1_000)
       .slice(0, 4);
     const extracted =
@@ -757,7 +786,7 @@ export async function researchWithTavily(
           })
         : new Map<string, string>();
     let usedEvidence = 0;
-    const enrichedSources = sources
+    const enrichedSources = fallbackSources
       .map((source) => {
         const available = Math.max(0, MAX_TOTAL_EVIDENCE_LENGTH - usedEvidence);
         const snippet = (extracted.get(source.url) || source.snippet || "")
