@@ -148,6 +148,29 @@ export default defineType({
       ],
     }),
     defineField({
+      name: "profileImages",
+      title:
+        "Profile Image Gallery (up to 10) / Galerie de profil (jusqu'à 10)",
+      type: "array",
+      of: [
+        {
+          type: "image",
+          options: { hotspot: true },
+          fields: [
+            {
+              name: "alt",
+              type: "string",
+              title: "Alternative Text / Texte alternatif",
+              validation: (Rule) => Rule.required().max(160),
+            },
+          ],
+        },
+      ],
+      description:
+        "Images rotate automatically every 10 seconds in the hero. The first image is used as the primary SEO image. / Les images changent automatiquement toutes les 10 secondes dans le hero. La première image est utilisée comme image SEO principale.",
+      validation: (Rule) => Rule.max(10),
+    }),
+    defineField({
       name: "email",
       title: "Email / Email",
       type: "string",

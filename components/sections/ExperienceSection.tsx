@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/dictionary";
 import { urlFor } from "@/sanity/lib/image";
 import { sanityFetch } from "@/sanity/lib/live";
+import { DotCarousel } from "./DotCarousel";
 
 const EXPERIENCE_QUERY =
   defineQuery(`*[_type == "experience"] | order(startDate desc){
@@ -62,8 +63,9 @@ export async function ExperienceSection({
           </p>
         </div>
 
-        <div className="space-y-8">
-          {experiences.map(
+        <DotCarousel
+          ariaLabel={dict.experience.title}
+          items={experiences.map(
             (exp: {
               company?: string | null;
               position?: string | null;
@@ -216,7 +218,8 @@ export async function ExperienceSection({
               );
             },
           )}
-        </div>
+          slideClassName="px-1"
+        />
       </div>
     </section>
   );

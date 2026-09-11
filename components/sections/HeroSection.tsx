@@ -28,7 +28,13 @@ const HERO_QUERY = defineQuery(`*[_id == "singleton-profile"][0]{
   availability,
   socialLinks,
   yearsOfExperience,
-  profileImage
+  profileImage,
+  profileImages[]{
+    asset->{_id,url,metadata{dimensions{width,height}}},
+    alt,
+    hotspot,
+    crop
+  }
 }`);
 
 export async function HeroSection({ locale = "en" }: { locale?: Locale }) {
@@ -59,6 +65,29 @@ export async function HeroSection({ locale = "en" }: { locale?: Locale }) {
         profile.availability as "available" | "open" | "unavailable"
       ] ?? profile.availability)
     : "";
+
+  const gallery = [
+    ...(profile.profileImages || [])
+      .map((image: { asset?: unknown; alt?: string | null }) =>
+        image?.asset
+          ? {
+              image,
+              url: urlFor(image).width(900).quality(92).url(),
+              alt: image.alt || `${firstName} ${lastName}`,
+            }
+          : null,
+      )
+      .filter(Boolean),
+    ...(profile.profileImage
+      ? [
+          {
+            image: profile.profileImage,
+            url: urlFor(profile.profileImage).width(900).quality(92).url(),
+            alt: profile.profileImage.alt || `${firstName} ${lastName}`,
+          },
+        ]
+      : []),
+  ].slice(0, 10) as Array<{ image: unknown; url: string; alt: string }>;
 
   return (
     <section
@@ -128,12 +157,9 @@ export async function HeroSection({ locale = "en" }: { locale?: Locale }) {
             </div>
 
             {/* Profile Image */}
-            {profile.profileImage && (
+            {gallery.length > 0 && (
               <ProfileImage
-                imageUrl={urlFor(profile.profileImage)
-                  .width(600)
-                  .height(600)
-                  .url()}
+                images={gallery}
                 firstName={profile.firstName || ""}
                 lastName={profile.lastName || ""}
               />

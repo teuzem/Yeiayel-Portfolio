@@ -4,6 +4,7 @@ export { BlogSection } from "./BlogSection";
 export { CertificationsSection } from "./CertificationsSection";
 export { ContactForm } from "./ContactForm";
 export { ContactSection } from "./ContactSection";
+export { DotCarousel } from "./DotCarousel";
 export { EducationSection } from "./EducationSection";
 export { ExperienceSection } from "./ExperienceSection";
 export { HeroSection } from "./HeroSection";

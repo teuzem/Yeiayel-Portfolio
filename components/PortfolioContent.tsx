@@ -28,8 +28,8 @@ export default async function PortfolioContent() {
       <ProjectsSection locale={locale} />
       <CertificationsSection locale={locale} />
       <AchievementsSection locale={locale} />
-      <ServicesSection locale={locale} />
       <BlogSection locale={locale} />
+      <ServicesSection locale={locale} />
       <ContactSection locale={locale} />
     </>
   );
