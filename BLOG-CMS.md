@@ -50,3 +50,22 @@ https://your-domain.example/api/revalidate/sanity?secret=your-long-random-webhoo
 
 Use the same value in the `x-sanity-revalidate-secret` request header. A valid
 webhook revalidates the portfolio, blog, metadata, and sitemap cache.
+
+## Complete article workflow
+
+- Every article supports a Sanity image asset and an optional HTTPS cover URL.
+  Category-specific editorial imagery is the final fallback, so cards and
+  article heroes do not render as empty media frames.
+- Article `h2` and `h3` blocks automatically create the responsive table of
+  contents.
+- **Blog Settings** controls the article sidebar promotion, including
+  bilingual text, media, destination, button labels, and visibility.
+- The article sidebar also displays recent posts and featured reviewed products
+  from Sanity.
+- Visitor comments are saved to Sanity with `pending` status. Approve a comment
+  in **Content & Community > Blog Comments** to publish it. Visitor email
+  addresses are never queried by the public frontend.
+- `SANITY_SERVER_API_TOKEN` needs create permission for comment submissions.
+- `SANITY_REVALIDATE_SECRET` and the configured webhook ensure approved
+  comments and editorial changes appear without waiting for the normal cache
+  interval.

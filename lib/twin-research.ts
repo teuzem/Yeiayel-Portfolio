@@ -55,6 +55,48 @@ function normalizedQuestion(question: string): string {
     .toLocaleLowerCase();
 }
 
+function exactEntityFromQuestion(question: string): string | null {
+  const organization = question.match(
+    /(?:about|sur|concernant|de)\s+([^?!.]{2,100}?\b(?:sarl|ltd|limited|inc|corp|corporation|company|group|organisation|organization)\b)/i,
+  )?.[1];
+  const person = question.match(
+    /^(?:who is|qui est|tell me about|parle-moi de|parlez-moi de)\s+([^?!.]{4,100})/i,
+  )?.[1];
+  return organization?.trim() || person?.trim() || null;
+}
+
+function entitySearchTerms(question: string): string[] {
+  const exactEntity = exactEntityFromQuestion(question);
+  if (!exactEntity) return [];
+  const ignored = new Set([
+    "company",
+    "corp",
+    "corporation",
+    "group",
+    "limited",
+    "organisation",
+    "organization",
+    "prof",
+    "professor",
+    "sarl",
+  ]);
+  return normalizedQuestion(exactEntity)
+    .split(/[^a-z0-9]+/)
+    .filter((term) => term.length >= 4 && !ignored.has(term));
+}
+
+function optimizedResearchQuery(question: string, country?: string): string {
+  const trimmed = question.trim();
+  const exactEntity = exactEntityFromQuestion(trimmed);
+  const region = country ? ` ${country}` : "";
+  return exactEntity
+    ? `${trimmed} Exact entity: "${exactEntity}".${region}`.slice(
+        0,
+        MAX_RESEARCH_QUERY_LENGTH,
+      )
+    : `${trimmed}${region}`.slice(0, MAX_RESEARCH_QUERY_LENGTH);
+}
+
 export function isResearchFollowUp(question: string): boolean {
   const normalized = normalizedQuestion(question).trim();
   return [
@@ -69,6 +111,9 @@ export function isResearchFollowUp(question: string): boolean {
     "qu'en est",
     "parle-moi plus",
     "peux-tu approfondir",
+    "son parcours",
+    "sa carriere",
+    "ses activites",
   ].some((prefix) => normalized.startsWith(prefix));
 }
 
@@ -154,7 +199,7 @@ export function shouldResearch(question: string): boolean {
   const properNameCount = words.filter(
     (word, index) =>
       index > 0 &&
-      /^[A-ZÀ-ÖØ-Þ][A-Za-zÀ-ÿ'-]{2,}$/.test(word.replace(/[.,?!:;()]/g, "")),
+      /^\p{Lu}[\p{L}'’-]{2,}$/u.test(word.replace(/[.,?!:;()]/g, "")),
   ).length;
 
   return (
@@ -177,8 +222,23 @@ export async function researchWithTavily(
   if (!apiKey) return { result: null, status: "missing-key" };
 
   const country = process.env.TWIN_RESEARCH_COUNTRY?.trim().toLowerCase();
-  const safeQuery = query.trim().slice(0, MAX_RESEARCH_QUERY_LENGTH);
+  const searchDepth = country ? "basic" : "fast";
+  const entityTerms = entitySearchTerms(query);
+  const safeQuery = optimizedResearchQuery(query, country);
   if (!safeQuery) return { result: null, status: "not-requested" };
+  const normalized = normalizedQuestion(safeQuery);
+  const newsQuery = [
+    "latest",
+    "today",
+    "recent",
+    "news",
+    "current events",
+    "aujourd",
+    "actualite",
+    "dernieres nouvelles",
+  ].some((term) => normalized.includes(term));
+  const todayQuery =
+    normalized.includes("today") || normalized.includes("aujourd");
 
   const deadline = Date.now() + timeoutMs;
   let data: TavilyResponse | null = null;
@@ -198,8 +258,9 @@ export async function researchWithTavily(
         body: JSON.stringify({
           api_key: apiKey,
           query: safeQuery,
-          search_depth: "fast",
-          topic: "general",
+          search_depth: searchDepth,
+          topic: newsQuery ? "news" : "general",
+          ...(newsQuery ? { days: todayQuery ? 1 : 7 } : {}),
           max_results: 5,
           include_answer: "basic",
           include_raw_content: false,
@@ -253,6 +314,16 @@ export async function researchWithTavily(
         };
       })
       .filter((source): source is ResearchSource => source !== null)
+      .filter((source) => {
+        if (!entityTerms.length) return true;
+        const evidence = normalizedQuestion(
+          `${source.title} ${source.snippet || ""}`,
+        );
+        const matches = entityTerms.filter((term) =>
+          evidence.includes(term),
+        ).length;
+        return matches >= Math.min(2, entityTerms.length);
+      })
       .slice(0, 5);
 
     if (!sources.length) return { result: null, status: "no-sources" };

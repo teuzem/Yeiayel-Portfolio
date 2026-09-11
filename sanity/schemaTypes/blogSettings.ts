@@ -70,6 +70,54 @@ export default defineType({
       description: "Hex value, for example #0F766E",
       validation: (Rule) => Rule.regex(/^#[0-9A-Fa-f]{6}$/),
     }),
+    defineField({
+      name: "advertisement",
+      title: "Article sidebar promotion / Promotion latérale",
+      type: "object",
+      fields: [
+        {
+          name: "enabled",
+          title: "Display promotion / Afficher la promotion",
+          type: "boolean",
+          initialValue: true,
+        },
+        { name: "title", title: "Title (EN)", type: "string" },
+        { name: "titleFr", title: "Title (FR)", type: "string" },
+        {
+          name: "description",
+          title: "Description (EN)",
+          type: "text",
+          rows: 3,
+        },
+        {
+          name: "descriptionFr",
+          title: "Description (FR)",
+          type: "text",
+          rows: 3,
+        },
+        {
+          name: "image",
+          title: "Promotion image / Image",
+          type: "image",
+          options: { hotspot: true },
+        },
+        {
+          name: "imageUrl",
+          title: "External image URL / URL externe",
+          type: "url",
+          validation: (Rule) => Rule.uri({ scheme: ["https"] }),
+        },
+        {
+          name: "link",
+          title: "Destination URL",
+          type: "string",
+          description:
+            "Accepts an internal path such as /#contact or a complete HTTPS URL.",
+        },
+        { name: "buttonLabel", title: "Button label (EN)", type: "string" },
+        { name: "buttonLabelFr", title: "Button label (FR)", type: "string" },
+      ],
+    }),
   ],
   preview: { select: { title: "name", subtitle: "position", media: "logo" } },
 });

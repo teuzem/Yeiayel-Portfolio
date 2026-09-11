@@ -3,6 +3,7 @@ import achievement from "./achievement";
 import blog from "./blog";
 import blogAuthor from "./blogAuthor";
 import blogCategory from "./blogCategory";
+import blogComment from "./blogComment";
 import blogProduct from "./blogProduct";
 import blogSettings from "./blogSettings";
 import certification from "./certification";
@@ -32,6 +33,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     achievement,
     blog,
     blogCategory,
+    blogComment,
     blogAuthor,
     blogProduct,
     blogSettings,

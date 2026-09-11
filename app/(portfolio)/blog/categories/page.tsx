@@ -1,5 +1,6 @@
-import { ArrowUpRight, Grid3X3 } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { CategoryIcon } from "@/components/blog/CategoryIcon";
 import { getServerLocale } from "@/components/server-context";
 import { blogCategoryText, getBlogCategories } from "@/lib/blog";
 
@@ -30,15 +31,10 @@ export default async function CategoriesPage() {
               <Link
                 key={category._id}
                 href={`/blog/categories/${category.slug}`}
-                className="group flex min-h-56 flex-col rounded-lg border bg-card p-6 transition-all hover:-translate-y-1 hover:shadow-lg"
+                className="group flex min-h-56 flex-col border-b py-6 transition-colors hover:border-primary"
               >
                 <div className="flex items-start justify-between">
-                  <span
-                    className="grid size-12 place-items-center rounded-md text-white"
-                    style={{ backgroundColor: category.color || "#0F766E" }}
-                  >
-                    <Grid3X3 className="size-6" />
-                  </span>
+                  <CategoryIcon icon={category.icon} slug={category.slug} />
                   <ArrowUpRight className="size-5 text-muted-foreground group-hover:text-primary" />
                 </div>
                 <h2 className="mt-7 text-xl font-semibold">{text.title}</h2>

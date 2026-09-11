@@ -47,13 +47,11 @@ const checks = [
     label: "Sanity server writes",
     ok: configured("SANITY_SERVER_API_TOKEN"),
     variables: ["SANITY_SERVER_API_TOKEN"],
-    optional: true,
   },
   {
     label: "Sanity instant publishing webhook",
     ok: configured("SANITY_REVALIDATE_SECRET"),
     variables: ["SANITY_REVALIDATE_SECRET"],
-    optional: true,
   },
   {
     label: "Clerk authentication",

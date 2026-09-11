@@ -134,6 +134,14 @@ export const structure: StructureResolver = (S) =>
                 .child(S.documentTypeList("blogAuthor").title("Blog Authors")),
 
               S.listItem()
+                .title("Blog Comments")
+                .icon(CommentIcon)
+                .schemaType("blogComment")
+                .child(
+                  S.documentTypeList("blogComment").title("Blog Comments"),
+                ),
+
+              S.listItem()
                 .title("Product Reviews")
                 .icon(StarIcon)
                 .schemaType("blogProduct")

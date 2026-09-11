@@ -46,10 +46,18 @@ TAVILY_API_KEY=your-tavily-key
 TWIN_RESEARCH_ENABLED=true
 TWIN_RESEARCH_TIMEOUT_MS=7000
 TWIN_RESEARCH_COUNTRY=cameroon
+
+# Recommended when multiple instances serve the same build
+NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=your-stable-32-byte-base64-key
 ```
 
-Only the Tavily key and one working AI provider are required for live web
-research. Configure both OpenAI and OpenRouter for provider failover.
+The Tavily key and one working AI provider are required for live web research.
+Configure both OpenAI and OpenRouter for provider failover. The Sanity server
+token is also required for moderated blog comment submissions, and the
+revalidation secret is required for immediate blog publishing updates.
+`TWIN_RESEARCH_COUNTRY` is optional. When configured, the application
+automatically uses Tavily's country-compatible basic search mode; without it,
+the faster search mode is used.
 
 ## Exact redeployment sequence
 
@@ -69,9 +77,13 @@ research. Configure both OpenAI and OpenRouter for provider failover.
     - `Compiled successfully`
     - `Prepared standalone server with public and static assets.`
 13. Restart the application process after deployment.
-14. Ask the production AI Twin:
+14. Publish or update one Sanity article and confirm the portfolio and blog
+    refresh after the webhook request.
+15. Submit a blog comment and confirm it appears in Studio as `pending`.
+16. Approve the comment in Studio and confirm it appears on the article page.
+17. Ask the production AI Twin:
     `Who is Prof NGUEFACK TSAGUES Georges?`
-15. Confirm the answer includes `Verified web sources` and clickable links.
+18. Confirm the answer includes `Verified web sources` and clickable links.
 
 If the environment check reports Tavily as missing, the variable is not
 available to the build process. Re-enter it in the application environment

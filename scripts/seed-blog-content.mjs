@@ -23,7 +23,7 @@ const client = createClient({
   useCdn: false,
 });
 
-const block = (text) => ({
+const block = (text, style = "normal") => ({
   _key: `block-${Math.random().toString(36).slice(2, 10)}`,
   _type: "block",
   children: [
@@ -35,10 +35,38 @@ const block = (text) => ({
     },
   ],
   markDefs: [],
-  style: "normal",
+  style,
 });
 
 const now = new Date().toISOString();
+const coverImages = {
+  "data-science":
+    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=82",
+  "ai-ml":
+    "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1600&q=82",
+  "data-analysis":
+    "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=1600&q=82",
+  "software-engineering":
+    "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=82",
+  "cloud-security":
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1600&q=82",
+  "career-education":
+    "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=82",
+  review:
+    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=82",
+  "batir-le-pays":
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=82",
+};
+const categoryIcons = {
+  "data-science": "database",
+  "artificial-intelligence": "brain-circuit",
+  "data-analysis": "chart",
+  "software-engineering": "code",
+  "cloud-security": "cloud-cog",
+  "career-education": "graduation-cap",
+  "product-reviews": "badge-check",
+  "batir-le-pays": "building-2",
+};
 
 const categoryDescriptions = {
   "data-science": {
@@ -127,6 +155,7 @@ const categories = [
   slug: { _type: "slug", current: slug },
   ...categoryDescriptions[slug],
   color,
+  icon: categoryIcons[slug],
 }));
 
 const author = {
@@ -154,6 +183,35 @@ const product = {
     "Un cadre d'évaluation pratique des plateformes analytiques, de la collaboration, de la gouvernance et de la maintenabilité.",
   score: 4.5,
 };
+const products = [
+  product,
+  {
+    _id: "blog-product-power-bi",
+    _type: "blogProduct",
+    name: "Microsoft Power BI",
+    slug: { _type: "slug", current: "microsoft-power-bi" },
+    brand: "Microsoft",
+    description:
+      "Business intelligence platform for governed dashboards, semantic models, and organizational reporting.",
+    descriptionFr:
+      "Plateforme de business intelligence pour tableaux de bord gouvernés, modèles sémantiques et reporting.",
+    score: 4.6,
+    url: "https://www.microsoft.com/power-platform/products/power-bi",
+  },
+  {
+    _id: "blog-product-vscode",
+    _type: "blogProduct",
+    name: "Visual Studio Code",
+    slug: { _type: "slug", current: "visual-studio-code" },
+    brand: "Microsoft",
+    description:
+      "Extensible code editor for software, data, notebook, and cloud workflows.",
+    descriptionFr:
+      "Éditeur de code extensible pour les workflows logiciels, data, notebooks et cloud.",
+    score: 4.8,
+    url: "https://code.visualstudio.com/",
+  },
+];
 
 const posts = [
   {
@@ -568,10 +626,38 @@ const additionalPosts = additionalPostBlueprints.map(
   },
 );
 
+const addHeadings = (blocks, locale) => {
+  if (!Array.isArray(blocks) || blocks.some((item) => item.style === "h2")) {
+    return blocks;
+  }
+  const firstHeading =
+    locale === "fr" ? "Comprendre l'enjeu" : "Understand the challenge";
+  const secondHeading =
+    locale === "fr" ? "Passer à l'action" : "Put it into practice";
+  const splitAt = Math.max(1, Math.ceil(blocks.length / 2));
+  return [
+    block(firstHeading, "h2"),
+    ...blocks.slice(0, splitAt),
+    block(secondHeading, "h2"),
+    ...blocks.slice(splitAt),
+  ];
+};
+
+const seededPosts = [...posts, ...additionalPosts].map((post, index) => ({
+  ...post,
+  featuredImageUrl:
+    post.featuredImageUrl ||
+    coverImages[post.category] ||
+    coverImages["data-science"],
+  content: addHeadings(post.content, "en"),
+  contentFr: addHeadings(post.contentFr, "fr"),
+  publishedAt: new Date(Date.now() - index * 86_400_000).toISOString(),
+}));
+
 const documents = [
   ...categories,
   author,
-  product,
+  ...products,
   {
     _id: "singleton-blogSettings",
     _type: "blogSettings",
@@ -586,9 +672,21 @@ const documents = [
     position: "Data Science and digital innovation at Bâtir le Pays SARL",
     positionFr: "Data Science et innovation numérique chez Bâtir le Pays SARL",
     accentColor: "#0F766E",
+    advertisement: {
+      enabled: true,
+      title: "Turn an idea into a dependable digital product",
+      titleFr: "Transformez une idée en produit numérique fiable",
+      description:
+        "Data, AI, web, and digital innovation services designed around measurable outcomes.",
+      descriptionFr:
+        "Des services data, IA, web et d'innovation numérique conçus autour de résultats mesurables.",
+      imageUrl: coverImages["batir-le-pays"],
+      link: "/#contact",
+      buttonLabel: "Discuss your project",
+      buttonLabelFr: "Discuter de votre projet",
+    },
   },
-  ...posts,
-  ...additionalPosts,
+  ...seededPosts,
 ];
 
 for (const document of documents) {

@@ -5,11 +5,21 @@ import { blogImageUrl } from "@/lib/blog";
 
 const components: PortableTextComponents = {
   block: {
-    h2: ({ children }) => (
-      <h2 className="mt-10 text-3xl font-bold tracking-tight">{children}</h2>
+    h2: ({ children, value }) => (
+      <h2
+        id={value?._key ? `section-${value._key}` : undefined}
+        className="mt-10 scroll-mt-24 text-3xl font-bold tracking-tight"
+      >
+        {children}
+      </h2>
     ),
-    h3: ({ children }) => (
-      <h3 className="mt-8 text-2xl font-semibold tracking-tight">{children}</h3>
+    h3: ({ children, value }) => (
+      <h3
+        id={value?._key ? `section-${value._key}` : undefined}
+        className="mt-8 scroll-mt-24 text-2xl font-semibold tracking-tight"
+      >
+        {children}
+      </h3>
     ),
     blockquote: ({ children }) => (
       <blockquote className="my-8 border-l-4 border-primary pl-5 text-lg italic text-muted-foreground">

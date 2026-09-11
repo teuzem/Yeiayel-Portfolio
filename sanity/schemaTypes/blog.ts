@@ -134,6 +134,15 @@ export default defineType({
       group: "content",
     }),
     defineField({
+      name: "featuredImageUrl",
+      title: "External featured image URL / URL externe de l'image",
+      type: "url",
+      description:
+        "Optional HTTPS fallback when no Sanity image asset is uploaded.",
+      validation: (Rule) => Rule.uri({ scheme: ["https"] }),
+      group: "content",
+    }),
+    defineField({
       name: "category",
       title: "Legacy category / Catégorie existante",
       type: "string",

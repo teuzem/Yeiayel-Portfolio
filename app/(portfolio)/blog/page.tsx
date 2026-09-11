@@ -2,6 +2,7 @@ import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BlogCard } from "@/components/blog/BlogCard";
+import { CategoryIcon } from "@/components/blog/CategoryIcon";
 import { getServerLocale } from "@/components/server-context";
 import {
   blogCategoryText,
@@ -9,6 +10,7 @@ import {
   getBlogCategories,
   getBlogPosts,
   getBlogSettings,
+  getLatestBlogPosts,
 } from "@/lib/blog";
 import { getSiteSettings, getSiteUrl } from "@/lib/site-settings";
 
@@ -37,15 +39,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BlogPage() {
-  const [locale, posts, categories, settings] = await Promise.all([
+  const [locale, posts, latestPosts, categories, settings] = await Promise.all([
     getServerLocale(),
     getBlogPosts(),
+    getLatestBlogPosts(),
     getBlogCategories(),
     getBlogSettings(),
   ]);
   const isFr = locale === "fr";
   const featured = posts.find((post) => post.featured) || posts[0];
-  const latest = posts.filter((post) => post._id !== featured?._id).slice(0, 6);
+  const latest = latestPosts
+    .filter((post) => post._id !== featured?._id)
+    .slice(0, 6);
   const trending = posts.filter((post) => post.trending).slice(0, 3);
   const heroTitle =
     (isFr
@@ -121,11 +126,12 @@ export default async function BlogPage() {
               <Link
                 key={category._id}
                 href={`/blog/categories/${category.slug}`}
-                className="group rounded-lg border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                className="group border-b py-5 transition-colors hover:border-primary"
               >
-                <span
-                  className="block size-10 rounded-md"
-                  style={{ backgroundColor: category.color || "#0F766E" }}
+                <CategoryIcon
+                  icon={category.icon}
+                  slug={category.slug}
+                  className="size-7"
                 />
                 <h3 className="mt-5 font-semibold">{text.title}</h3>
                 <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">

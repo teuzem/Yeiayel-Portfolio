@@ -1,13 +1,13 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { BlogCard } from "@/components/blog/BlogCard";
-import { getBlogPosts } from "@/lib/blog";
+import { getLatestBlogPosts } from "@/lib/blog";
 import type { Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/dictionary";
 
 export async function BlogSection({ locale = "en" }: { locale?: Locale }) {
   const [posts, dict] = await Promise.all([
-    getBlogPosts(3),
+    getLatestBlogPosts(3),
     getDictionary(locale),
   ]);
   if (!posts.length) return null;
