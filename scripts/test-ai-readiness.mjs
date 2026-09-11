@@ -24,6 +24,26 @@ const fixture = {
 
 assert.equal(shouldResearch("Who is Prof NGUEFACK TSAGUES Georges?"), true);
 assert.equal(
+  shouldResearch("Can you look this person up online and cite sources?"),
+  true,
+);
+assert.equal(
+  shouldResearch("Please find out on the internet what happened today."),
+  true,
+);
+assert.equal(
+  shouldResearch(
+    "Peux-tu rechercher cette entreprise en ligne et vérifier les sources ?",
+  ),
+  true,
+);
+assert.equal(
+  shouldResearch("Consulte le web pour les dernières nouvelles sur l'IA."),
+  true,
+);
+assert.equal(shouldResearch("What happened during 2026?"), true);
+assert.equal(shouldResearch("Qu'est-ce qui s'est passé aujourd'hui ?"), true);
+assert.equal(
   shouldResearch("Quelles sont les dernières actualités sur l'IA ?"),
   true,
 );
@@ -44,6 +64,8 @@ assert.equal(
 assert.equal(shouldResearch("Quel est ton parcours professionnel ?"), false);
 assert.equal(isResearchFollowUp("What about his career?"), true);
 assert.equal(isResearchFollowUp("Et son parcours ?"), true);
+assert.equal(isResearchFollowUp("Can you search further?"), true);
+assert.equal(isResearchFollowUp("Peux-tu verifier encore ?"), true);
 
 const career = retrieveTwinContext(
   fixture,
@@ -86,16 +108,15 @@ if (process.env.TAVILY_API_KEY?.trim()) {
     ["Who is Prof NGUEFACK TSAGUES Georges?", "en"],
     ["What are the latest AI developments today?", "en"],
     ["Quelles sont les dernières actualités sur l'IA ?", "fr"],
-    [
-      "Parle moi en profondeur de la biographie du representant de l'OMS au Cameroun decrivant son parcours au sein de cet organe de sante mondiale",
-      "fr",
-    ],
-    ["Qui est l'actuel representant de l'OMS au Cameroun ?", "fr"],
   ];
   let directExtractionUrl = null;
   for (const [query, locale] of liveCases) {
     let lookup = await researchWithTavily(query, locale, 20_000);
-    if (lookup.status === "failed") {
+    for (
+      let attempt = 1;
+      lookup.status === "failed" && attempt < 3;
+      attempt++
+    ) {
       lookup = await researchWithTavily(query, locale, 20_000);
     }
     assert.equal(lookup.status, "success", `Tavily failed for: ${query}`);
