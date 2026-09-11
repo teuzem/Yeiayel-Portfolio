@@ -1,62 +1,115 @@
+import {
+  BadgeCheck,
+  BookOpenCheck,
+  Languages,
+  Scale,
+  Target,
+} from "lucide-react";
+import { BlogPageHero } from "@/components/blog/BlogPageHero";
 import { getServerLocale } from "@/components/server-context";
-import { getBlogSettings } from "@/lib/blog";
+import { getBlogCategories, getBlogPosts, getBlogSettings } from "@/lib/blog";
 
 export default async function AboutBlogPage() {
-  const [locale, settings] = await Promise.all([
+  const [locale, settings, posts, categories] = await Promise.all([
     getServerLocale(),
     getBlogSettings(),
+    getBlogPosts(),
+    getBlogCategories(),
   ]);
   const isFr = locale === "fr";
   const position =
     (isFr
       ? settings.positionFr || settings.position
       : settings.position || settings.positionFr) || "Bâtir le Pays SARL";
+
+  const principles = [
+    {
+      icon: Target,
+      title: isFr ? "Utilité concrète" : "Practical usefulness",
+      text: isFr
+        ? "Chaque publication part d'un problème réel et mène vers des décisions ou des méthodes applicables."
+        : "Every publication starts with a real problem and leads to decisions or methods readers can apply.",
+    },
+    {
+      icon: Scale,
+      title: isFr ? "Rigueur éditoriale" : "Editorial rigor",
+      text: isFr
+        ? "Les faits actuels sont sourcés, les opinions sont identifiées et les évaluations exposent leurs critères."
+        : "Current claims are sourced, opinions are identified, and reviews disclose their evaluation criteria.",
+    },
+    {
+      icon: Languages,
+      title: isFr ? "Bilingue par conception" : "Bilingual by design",
+      text: isFr
+        ? "Les articles, résumés et métadonnées SEO peuvent être publiés nativement en français et en anglais."
+        : "Articles, summaries, and SEO metadata can be published natively in English and French.",
+    },
+    {
+      icon: BadgeCheck,
+      title: isFr ? "Expérience de terrain" : "Practice-led perspective",
+      text: isFr
+        ? `La ligne éditoriale s'appuie sur une expérience professionnelle active, notamment ${position}.`
+        : `The editorial point of view is grounded in active professional experience, including ${position}.`,
+    },
+  ];
+
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12 sm:py-16">
-      <p className="text-sm font-semibold text-primary">
-        {isFr ? "Notre ligne éditoriale" : "Our editorial approach"}
-      </p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
-        {isFr ? "À propos du Journal Yeiayel" : "About Yeiayel Journal"}
-      </h1>
-      <div className="mt-8 space-y-8 text-lg leading-8 text-muted-foreground">
-        <p>
-          {isFr
-            ? "Ce blog transforme l'expérience du portfolio en analyses pratiques sur la data science, l'intelligence artificielle, le développement logiciel, le cloud, la sécurité et l'innovation numérique."
-            : "This publication turns the portfolio’s experience into practical analysis on data science, artificial intelligence, software engineering, cloud, security, and digital innovation."}
-        </p>
-        <section>
-          <h2 className="text-2xl font-semibold text-foreground">
-            {isFr ? "Expérience professionnelle" : "Professional perspective"}
-          </h2>
-          <p className="mt-3">
-            {position}.{" "}
-            {isFr
-              ? "Les contenus privilégient les problèmes réels, les décisions mesurables et les solutions que les équipes peuvent maintenir."
-              : "The editorial focus is on real problems, measurable decisions, and solutions teams can sustain."}
-          </p>
-        </section>
-        <section>
-          <h2 className="text-2xl font-semibold text-foreground">
-            {isFr ? "Principes éditoriaux" : "Editorial principles"}
-          </h2>
-          <p className="mt-3">
-            {isFr
-              ? "Les faits actuels doivent être sourcés. Les opinions sont identifiées. Les évaluations expliquent leurs critères. Les corrections et mises à jour peuvent être ajoutées dans Sanity Studio."
-              : "Current claims should be sourced. Opinions are identified. Reviews explain their criteria. Corrections and updates can be managed through Sanity Studio."}
-          </p>
-        </section>
-        <section>
-          <h2 className="text-2xl font-semibold text-foreground">
-            {isFr ? "Langues" : "Languages"}
-          </h2>
-          <p className="mt-3">
-            {isFr
-              ? "Chaque article peut être publié nativement en français et en anglais, avec un contenu, un résumé et des métadonnées SEO adaptés."
-              : "Every article can be published natively in English and French, with localized body content, summaries, and SEO metadata."}
-          </p>
-        </section>
-      </div>
+    <main>
+      <BlogPageHero
+        eyebrow={isFr ? "Notre ligne éditoriale" : "Our editorial approach"}
+        title={isFr ? "À propos du Journal Yeiayel" : "About Yeiayel Journal"}
+        description={
+          isFr
+            ? "Un média professionnel consacré à la data science, l'intelligence artificielle, l'ingénierie logicielle, le cloud, la sécurité et l'innovation numérique."
+            : "A professional publication focused on data science, artificial intelligence, software engineering, cloud, security, and digital innovation."
+        }
+        icon={BookOpenCheck}
+        metrics={[
+          {
+            value: posts.length,
+            label: isFr ? "publications" : "publications",
+          },
+          { value: categories.length, label: isFr ? "domaines" : "domains" },
+          { value: 2, label: isFr ? "langues" : "languages" },
+        ]}
+        dark
+      />
+
+      <section className="mx-auto max-w-7xl px-6 py-14 sm:py-20">
+        <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr]">
+          <div>
+            <p className="text-sm font-semibold text-primary">
+              {isFr ? "Pourquoi ce journal" : "Why this journal"}
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight">
+              {isFr
+                ? "Transformer l'expérience en connaissance utile"
+                : "Turning experience into useful knowledge"}
+            </h2>
+            <p className="mt-5 text-base leading-8 text-muted-foreground">
+              {isFr
+                ? "Yeiayel Journal prolonge le portfolio avec des analyses détaillées, des retours d'expérience, des guides et des évaluations conçus pour les professionnels, les étudiants et les décideurs."
+                : "Yeiayel Journal extends the portfolio through detailed analysis, field notes, guides, and reviews designed for professionals, students, and decision-makers."}
+            </p>
+          </div>
+          <div className="grid border-y sm:grid-cols-2">
+            {principles.map((principle) => (
+              <article
+                key={principle.title}
+                className="border-b p-6 last:border-b-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0"
+              >
+                <principle.icon className="size-6 text-primary" />
+                <h3 className="mt-6 text-lg font-semibold">
+                  {principle.title}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  {principle.text}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

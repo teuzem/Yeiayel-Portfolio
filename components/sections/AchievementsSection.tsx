@@ -126,15 +126,15 @@ export async function AchievementsSection({
             <DotCarousel
               ariaLabel={dict.achievements.featured}
               items={Array.from(
-                { length: Math.ceil(featured.length / 2) },
+                { length: Math.ceil(featured.length / 3) },
                 (_, slideIndex) => (
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: grouped carousel slides are positional.
                     key={`featured-slide-${slideIndex}`}
-                    className="grid grid-cols-1 gap-6 @3xl:grid-cols-2"
+                    className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
                   >
                     {featured
-                      .slice(slideIndex * 2, slideIndex * 2 + 2)
+                      .slice(slideIndex * 3, slideIndex * 3 + 3)
                       .map((achievement) => (
                         <div
                           key={`${achievement.title}-${achievement.date}`}
@@ -224,7 +224,7 @@ export async function AchievementsSection({
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: grouped carousel slides are positional.
                     key={`regular-slide-${slideIndex}`}
-                    className="grid grid-cols-1 gap-6 @2xl:grid-cols-2 @5xl:grid-cols-3"
+                    className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
                   >
                     {regular
                       .slice(slideIndex * 3, slideIndex * 3 + 3)

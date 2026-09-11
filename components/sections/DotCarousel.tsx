@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface DotCarouselProps {
@@ -20,14 +20,16 @@ export function DotCarousel({
 }: DotCarouselProps) {
   const safeItems = useMemo(() => items.filter(Boolean), [items]);
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (safeItems.length < 2) return;
+    if (paused || safeItems.length < 2) return;
     const timer = window.setInterval(() => {
       setIndex((current) => (current + 1) % safeItems.length);
     }, intervalMs);
     return () => window.clearInterval(timer);
-  }, [intervalMs, safeItems.length]);
+  }, [intervalMs, paused, safeItems.length]);
 
   useEffect(() => {
     setIndex((current) => Math.min(current, Math.max(0, safeItems.length - 1)));
@@ -36,12 +38,23 @@ export function DotCarousel({
   if (!safeItems.length) return null;
 
   return (
-    <div className={cn("w-full", className)}>
+    <section
+      ref={rootRef}
+      className={cn("w-full", className)}
+      aria-label={ariaLabel}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={(event) => {
+        if (!rootRef.current?.contains(event.relatedTarget as Node | null)) {
+          setPaused(false);
+        }
+      }}
+    >
       <div className="overflow-hidden">
         <div
           className="flex motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out"
           style={{ transform: `translateX(-${index * 100}%)` }}
-          aria-live="polite"
         >
           {safeItems.map((item, itemIndex) => (
             <div
@@ -81,6 +94,6 @@ export function DotCarousel({
           ))}
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }

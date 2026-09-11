@@ -1,6 +1,12 @@
 "use client";
 
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  ArrowDown,
+  LayoutGrid,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import type { BlogCategory, BlogPost } from "@/lib/blog";
 import {
@@ -9,6 +15,7 @@ import {
   localizedBlogText,
 } from "@/lib/blog";
 import type { Locale } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { BlogCard } from "./BlogCard";
 
 const PAGE_SIZE = 9;
@@ -101,17 +108,29 @@ export function BlogExplorer({
           (!cutoff || date >= cutoff)
         );
       })
-      .sort((a, b) => {
-        if (sort === "az")
-          return localizedBlogText(a, locale, "title").localeCompare(
-            localizedBlogText(b, locale, "title"),
+      .sort((firstPost, secondPost) => {
+        if (sort === "az") {
+          return localizedBlogText(firstPost, locale, "title").localeCompare(
+            localizedBlogText(secondPost, locale, "title"),
             locale,
           );
-        const first = new Date(a.publishedAt || 0).getTime();
-        const second = new Date(b.publishedAt || 0).getTime();
+        }
+        const first = new Date(firstPost.publishedAt || 0).getTime();
+        const second = new Date(secondPost.publishedAt || 0).getTime();
         return sort === "oldest" ? first - second : second - first;
       });
   }, [category, contentType, locale, period, posts, query, sort]);
+
+  const activeFilterCount = [
+    category !== "all",
+    contentType !== "all",
+    period !== "all",
+  ].filter(Boolean).length;
+
+  const updateFilter = (setter: (value: string) => void, value: string) => {
+    setter(value);
+    setVisible(PAGE_SIZE);
+  };
 
   const reset = () => {
     setQuery("");
@@ -124,14 +143,15 @@ export function BlogExplorer({
 
   return (
     <div>
-      {title && (
+      {title ? (
         <h1 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl">
           {title}
         </h1>
-      )}
-      <section className="mb-8 rounded-lg border bg-muted/25 p-4">
-        <div className="flex flex-col gap-3 lg:flex-row">
-          <label className="relative flex-1">
+      ) : null}
+
+      <section className="mb-10 overflow-hidden border-y bg-background">
+        <div className="grid gap-3 py-5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+          <label className="relative">
             <span className="sr-only">
               {isFr ? "Rechercher les articles" : "Search articles"}
             </span>
@@ -147,45 +167,65 @@ export function BlogExplorer({
                   ? "Titre, sujet, auteur ou mot-clé…"
                   : "Title, topic, author, or keyword…"
               }
-              className="h-12 w-full rounded-md border bg-background pl-12 pr-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="h-14 w-full rounded-md border bg-muted/20 pl-12 pr-4 text-base outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </label>
           <button
             type="button"
             onClick={() => setFiltersOpen((value) => !value)}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-md border bg-background px-4 text-sm font-medium hover:bg-muted"
+            className={cn(
+              "inline-flex h-14 items-center justify-center gap-2 rounded-md border px-5 text-sm font-semibold transition-colors",
+              filtersOpen || activeFilterCount
+                ? "border-primary bg-primary text-primary-foreground"
+                : "bg-background hover:bg-muted",
+            )}
+            aria-expanded={filtersOpen}
           >
-            <SlidersHorizontal className="size-4" />{" "}
+            <SlidersHorizontal className="size-4" />
             {isFr ? "Filtres" : "Filters"}
+            {activeFilterCount ? (
+              <span className="grid size-5 place-items-center rounded-full bg-background/20 text-[10px]">
+                {activeFilterCount}
+              </span>
+            ) : null}
           </button>
           <button
             type="button"
             onClick={reset}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-md px-4 text-sm text-muted-foreground hover:bg-muted"
+            className="inline-flex h-14 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
           >
-            <X className="size-4" /> {isFr ? "Réinitialiser" : "Clear"}
+            <X className="size-4" />
+            {isFr ? "Réinitialiser" : "Clear"}
           </button>
         </div>
-        {suggestions.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-2">
+
+        {suggestions.length > 0 ? (
+          <div className="flex flex-wrap gap-2 border-t py-4">
+            <span className="mr-1 self-center text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              {isFr ? "Suggestions" : "Suggestions"}
+            </span>
             {suggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 type="button"
-                onClick={() => setQuery(suggestion)}
-                className="rounded-full bg-muted px-3 py-1.5 text-xs hover:bg-primary hover:text-primary-foreground"
+                onClick={() => {
+                  setQuery(suggestion);
+                  setVisible(PAGE_SIZE);
+                }}
+                className="rounded-full border px-3 py-1.5 text-xs font-medium hover:border-primary hover:text-primary"
               >
                 {suggestion}
               </button>
             ))}
           </div>
-        )}
-        {filtersOpen && (
-          <div className="mt-4 grid gap-3 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
+        ) : null}
+
+        {filtersOpen ? (
+          <div className="grid gap-4 border-t bg-muted/20 py-5 sm:grid-cols-2 lg:grid-cols-4">
             <Filter
               label={isFr ? "Catégorie" : "Category"}
               value={category}
-              onChange={setCategory}
+              onChange={(value) => updateFilter(setCategory, value)}
               options={[
                 { value: "all", label: isFr ? "Toutes" : "All categories" },
                 ...categories.flatMap((item) =>
@@ -201,9 +241,9 @@ export function BlogExplorer({
               ]}
             />
             <Filter
-              label={isFr ? "Type" : "Content type"}
+              label={isFr ? "Format" : "Content type"}
               value={contentType}
-              onChange={setContentType}
+              onChange={(value) => updateFilter(setContentType, value)}
               options={[
                 { value: "all", label: isFr ? "Tous" : "All types" },
                 ...types.map((value) => ({ value, label: value })),
@@ -212,7 +252,7 @@ export function BlogExplorer({
             <Filter
               label={isFr ? "Période" : "Published"}
               value={period}
-              onChange={setPeriod}
+              onChange={(value) => updateFilter(setPeriod, value)}
               options={[
                 { value: "all", label: isFr ? "Toutes les dates" : "Any time" },
                 {
@@ -223,13 +263,16 @@ export function BlogExplorer({
                   value: "90d",
                   label: isFr ? "90 derniers jours" : "Last 90 days",
                 },
-                { value: "year", label: isFr ? "Dernière année" : "Last year" },
+                {
+                  value: "year",
+                  label: isFr ? "Dernière année" : "Last year",
+                },
               ]}
             />
             <Filter
               label={isFr ? "Trier" : "Sort"}
               value={sort}
-              onChange={setSort}
+              onChange={(value) => updateFilter(setSort, value)}
               options={[
                 { value: "newest", label: isFr ? "Plus récents" : "Newest" },
                 { value: "oldest", label: isFr ? "Plus anciens" : "Oldest" },
@@ -237,11 +280,26 @@ export function BlogExplorer({
               ]}
             />
           </div>
-        )}
+        ) : null}
       </section>
-      <div className="mb-5 text-sm text-muted-foreground">
-        {filtered.length} {isFr ? "article(s)" : "article(s)"}
+
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b pb-5">
+        <div>
+          <p className="inline-flex items-center gap-2 text-sm font-semibold">
+            <LayoutGrid className="size-4 text-primary" />
+            {filtered.length} {isFr ? "résultats" : "results"}
+          </p>
+          {query.trim() ? (
+            <p className="mt-1 max-w-2xl truncate text-sm text-muted-foreground">
+              {isFr ? "Recherche pour" : "Search for"} “{query.trim()}”
+            </p>
+          ) : null}
+        </div>
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          {isFr ? "Mise à jour en direct" : "Live filtering"}
+        </p>
       </div>
+
       {filtered.length ? (
         <>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -249,23 +307,39 @@ export function BlogExplorer({
               <BlogCard key={post._id} post={post} locale={locale} />
             ))}
           </div>
-          {visible < filtered.length && (
+          {visible < filtered.length ? (
             <div className="mt-10 text-center">
               <button
                 type="button"
                 onClick={() => setVisible((value) => value + PAGE_SIZE)}
-                className="rounded-md border px-6 py-3 text-sm font-semibold hover:bg-muted"
+                className="inline-flex items-center gap-2 rounded-md border px-6 py-3 text-sm font-semibold hover:bg-muted"
               >
                 {isFr ? "Afficher plus" : "Load more"}
+                <ArrowDown className="size-4" />
               </button>
             </div>
-          )}
+          ) : null}
         </>
       ) : (
-        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
-          {isFr
-            ? "Aucun article ne correspond à ces critères."
-            : "No articles match these filters."}
+        <div className="grid min-h-64 place-items-center border-y text-center">
+          <div className="max-w-md px-6">
+            <Search className="mx-auto size-8 text-muted-foreground" />
+            <h2 className="mt-4 text-xl font-semibold">
+              {isFr ? "Aucun résultat" : "No results found"}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {isFr
+                ? "Essayez un terme plus large ou réinitialisez les filtres actifs."
+                : "Try a broader search term or clear the active filters."}
+            </p>
+            <button
+              type="button"
+              onClick={reset}
+              className="mt-5 text-sm font-semibold text-primary hover:underline"
+            >
+              {isFr ? "Réinitialiser la recherche" : "Reset search"}
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -284,12 +358,12 @@ function Filter({
   options: Array<{ value: string; label: string }>;
 }) {
   return (
-    <label className="grid gap-1.5 text-xs font-medium text-muted-foreground">
+    <label className="grid gap-2 px-1 text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
       {label}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 rounded-md border bg-background px-3 text-sm text-foreground"
+        className="h-11 rounded-md border bg-background px-3 text-sm font-medium normal-case tracking-normal text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

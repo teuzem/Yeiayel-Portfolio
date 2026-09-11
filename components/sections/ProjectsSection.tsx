@@ -1,4 +1,10 @@
-import Image from "next/image";
+import {
+  ArrowUpRight,
+  Code2,
+  ExternalLink,
+  Layers3,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { defineQuery } from "next-sanity";
 import type { Locale } from "@/lib/i18n";
@@ -6,6 +12,7 @@ import { getDictionary } from "@/lib/i18n/dictionary";
 import { urlFor } from "@/sanity/lib/image";
 import { sanityFetch } from "@/sanity/lib/live";
 import { DotCarousel } from "./DotCarousel";
+import { ProjectMedia } from "./ProjectMedia";
 
 const PROJECTS_QUERY =
   defineQuery(`*[_type == "project" && featured == true] | order(order asc)[0...6]{
@@ -35,34 +42,70 @@ const CATEGORY_LABELS: Record<string, { en: string; fr: string }> = {
   other: { en: "Other", fr: "Autre" },
 };
 
+const PROJECT_OUTCOMES: Record<string, { en: string; fr: string }> = {
+  "admission-desk": {
+    en: "Digitizes international student recruitment and admission operations.",
+    fr: "Digitalise le recrutement et l'admission des étudiants internationaux.",
+  },
+  "batir-le-pays-website": {
+    en: "Creates a unified digital presence for a pan-African industrial group.",
+    fr: "Crée une présence numérique unifiée pour un groupe industriel panafricain.",
+  },
+  "batir-le-pays-portfolio": {
+    en: "Structures and showcases multidisciplinary construction and training work.",
+    fr: "Structure et valorise des réalisations multidisciplinaires en BTP et formation.",
+  },
+  pryemo: {
+    en: "Positions a digital-services startup with a clear, scalable web platform.",
+    fr: "Positionne une startup de services numériques avec une plateforme web évolutive.",
+  },
+  "go2skul-web": {
+    en: "Modernizes a multi-entity education ecosystem and local search presence.",
+    fr: "Modernise un écosystème éducatif multi-entités et sa visibilité locale.",
+  },
+  "batir-le-pays-blog": {
+    en: "Builds an editorial channel for industry knowledge and company news.",
+    fr: "Développe un canal éditorial pour l'expertise métier et l'actualité du groupe.",
+  },
+};
+
 export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
-  // biome-ignore lint/suspicious/noExplicitAny: generated Sanity result varies with the GROQ projection
+  // biome-ignore lint/suspicious/noExplicitAny: generated Sanity result varies with the GROQ projection.
   const { data: projects } = await sanityFetch<any[]>({
     query: PROJECTS_QUERY,
   });
   const dict = getDictionary(locale);
   const isFr = locale === "fr";
 
-  if (!projects || projects.length === 0) {
-    return null;
-  }
+  if (!projects?.length) return null;
 
-  const categoryLabel = (cat: string | null | undefined) => {
-    if (!cat) return null;
-    const map = CATEGORY_LABELS[cat];
-    return map ? (isFr ? map.fr : map.en) : cat;
+  const categoryLabel = (category: string | null | undefined) => {
+    if (!category) return isFr ? "Produit numérique" : "Digital product";
+    const labels = CATEGORY_LABELS[category];
+    return labels ? labels[locale] : category;
   };
 
   return (
-    <section id="projects" className="py-20 px-6 bg-muted/30">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            {dict.projects.title}
-          </h2>
-          <p className="text-xl text-muted-foreground">
-            {dict.projects.subtitle}
-          </p>
+    <section id="projects" className="border-y bg-muted/25 px-6 py-20">
+      <div className="container mx-auto max-w-7xl">
+        <div className="mb-12 grid gap-7 border-b pb-9 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-3xl">
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
+              <Layers3 className="size-4" />
+              {isFr ? "Produits et plateformes" : "Products and platforms"}
+            </p>
+            <h2 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
+              {dict.projects.title}
+            </h2>
+            <p className="mt-4 text-lg leading-8 text-muted-foreground">
+              {dict.projects.subtitle}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
+            <ShieldCheck className="size-5 text-primary" />
+            {projects.length}{" "}
+            {isFr ? "réalisations sélectionnées" : "selected case studies"}
+          </div>
         </div>
 
         <DotCarousel
@@ -73,118 +116,131 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
               <div
                 // biome-ignore lint/suspicious/noArrayIndexKey: grouped carousel slides are positional.
                 key={`project-slide-${slideIndex}`}
-                className="grid grid-cols-1 gap-8 @2xl:grid-cols-2 @5xl:grid-cols-3"
+                className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
               >
                 {projects
                   .slice(slideIndex * 3, slideIndex * 3 + 3)
-                  .map((project) => (
-                    <div
-                      key={project.slug?.current}
-                      className="@container/card group bg-card border rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300"
-                    >
-                      {/* Project Image */}
-                      {project.coverImage && (
-                        <div className="relative aspect-video overflow-hidden bg-muted">
-                          <Image
-                            src={urlFor(project.coverImage)
-                              .width(600)
-                              .height(400)
-                              .url()}
-                            alt={
-                              isFr
-                                ? project.titleFr ||
-                                  project.title ||
-                                  dict.projects.altImage
-                                : project.title || dict.projects.altImage
-                            }
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          {/* Glass overlay that fades on hover */}
-                          <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] group-hover:opacity-0 transition-opacity duration-300" />
-                        </div>
-                      )}
+                  .map((project, projectIndex) => {
+                    const slug = project.slug?.current || "";
+                    const title = isFr
+                      ? project.titleFr || project.title
+                      : project.title || project.titleFr;
+                    const tagline = isFr
+                      ? project.taglineFr || project.tagline
+                      : project.tagline || project.taglineFr;
+                    const cmsImage = project.coverImage
+                      ? urlFor(project.coverImage)
+                          .width(1200)
+                          .height(720)
+                          .fit("crop")
+                          .url()
+                      : null;
+                    const githubUrl =
+                      typeof project.githubUrl === "string" &&
+                      /^https:\/\/(www\.)?github\.com\//i.test(
+                        project.githubUrl,
+                      )
+                        ? project.githubUrl
+                        : null;
+                    const outcome =
+                      PROJECT_OUTCOMES[slug]?.[locale] || tagline || "";
 
-                      {/* Project Content */}
-                      <div className="p-4 @md/card:p-6 space-y-3 @md/card:space-y-4">
-                        <div>
-                          <div className="flex items-center gap-2 mb-2">
-                            {project.category && (
-                              <span className="text-xs px-2 py-0.5 @md/card:py-1 rounded-full bg-primary/10 text-primary">
-                                {categoryLabel(project.category)}
-                              </span>
-                            )}
+                    return (
+                      <article
+                        key={slug || `${project.title}-${projectIndex}`}
+                        className="@container/card group flex min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                      >
+                        <ProjectMedia
+                          slug={slug}
+                          title={title || dict.projects.altImage}
+                          liveUrl={project.liveUrl}
+                          cmsImage={cmsImage}
+                          locale={locale}
+                        />
+
+                        <div className="flex flex-1 flex-col p-5 @md/card:p-6">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+                              {categoryLabel(project.category)}
+                            </span>
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {String(
+                                slideIndex * 3 + projectIndex + 1,
+                              ).padStart(2, "0")}
+                            </span>
                           </div>
-                          <h3 className="text-lg @md/card:text-xl font-semibold mb-2 line-clamp-2">
-                            {isFr
-                              ? project.titleFr || project.title
-                              : project.title ||
-                                "Untitled Project / Projet sans titre"}
+                          <h3 className="mt-4 text-xl font-bold leading-tight">
+                            {title || "Untitled Project / Projet sans titre"}
                           </h3>
-                          <p className="text-muted-foreground text-xs @md/card:text-sm line-clamp-2">
-                            {isFr
-                              ? project.taglineFr || project.tagline
-                              : project.tagline}
-                          </p>
-                        </div>
+                          {tagline ? (
+                            <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                              {tagline}
+                            </p>
+                          ) : null}
+                          {outcome ? (
+                            <div className="mt-5 border-l-2 border-primary pl-3">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                                {isFr ? "Impact" : "Outcome"}
+                              </p>
+                              <p className="mt-1 line-clamp-2 text-sm font-medium leading-5">
+                                {outcome}
+                              </p>
+                            </div>
+                          ) : null}
 
-                        {/* Tech Stack */}
-                        {project.technologies &&
-                          project.technologies.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 @md/card:gap-2">
+                          {project.technologies?.length ? (
+                            <div className="mt-5 flex flex-wrap gap-1.5">
                               {project.technologies
                                 .slice(0, 4)
-                                // biome-ignore lint/suspicious/noExplicitAny: Sanity reference projection is dynamic
-                                .map((tech: any, idx: number) => {
-                                  const techData =
-                                    tech &&
-                                    typeof tech === "object" &&
-                                    "name" in tech
-                                      ? tech
+                                // biome-ignore lint/suspicious/noExplicitAny: Sanity reference projection is dynamic.
+                                .map((technology: any) => {
+                                  const name =
+                                    technology &&
+                                    typeof technology === "object" &&
+                                    "name" in technology
+                                      ? technology.name
                                       : null;
-                                  return techData?.name ? (
+                                  return name ? (
                                     <span
-                                      key={`${project.slug?.current}-tech-${idx}`}
-                                      className="text-xs px-2 py-0.5 @md/card:py-1 rounded-md bg-muted"
+                                      key={`${slug}-technology-${name}`}
+                                      className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[11px] font-medium"
                                     >
-                                      {techData.name}
+                                      <Code2 className="size-3" />
+                                      {name}
                                     </span>
                                   ) : null;
                                 })}
-                              {project.technologies.length > 4 && (
-                                <span className="text-xs px-2 py-0.5 @md/card:py-1 rounded-md bg-muted">
-                                  +{project.technologies.length - 4}
-                                </span>
-                              )}
                             </div>
-                          )}
+                          ) : null}
 
-                        {/* Actions */}
-                        <div className="flex flex-col @xs/card:flex-row gap-2 @xs/card:gap-3 pt-2">
-                          {project.liveUrl && (
-                            <Link
-                              href={project.liveUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex-1 text-center px-3 py-2 @md/card:px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-xs @md/card:text-sm"
-                            >
-                              {dict.projects.liveDemo}
-                            </Link>
-                          )}
-                          {project.githubUrl && (
-                            <Link
-                              href={project.githubUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-2 @md/card:px-4 rounded-lg border hover:bg-accent transition-colors text-xs @md/card:text-sm text-center"
-                            >
-                              {dict.projects.github}
-                            </Link>
-                          )}
+                          <div className="mt-auto flex items-center gap-2 border-t pt-5">
+                            {project.liveUrl ? (
+                              <Link
+                                href={project.liveUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                              >
+                                {dict.projects.liveDemo}
+                                <ArrowUpRight className="size-4" />
+                              </Link>
+                            ) : null}
+                            {githubUrl ? (
+                              <Link
+                                href={githubUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="grid size-10 place-items-center rounded-md border hover:bg-muted"
+                                aria-label={dict.projects.github}
+                              >
+                                <ExternalLink className="size-4" />
+                              </Link>
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      </article>
+                    );
+                  })}
               </div>
             ),
           )}

@@ -35,7 +35,13 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "image.thum.io",
+        pathname: "/get/**",
+      },
     ],
+    qualities: [75, 92, 100],
   },
   async headers() {
     return [

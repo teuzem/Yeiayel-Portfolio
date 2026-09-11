@@ -5,7 +5,7 @@ import type { Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/dictionary";
 import { urlFor } from "@/sanity/lib/image";
 import { sanityFetch } from "@/sanity/lib/live";
-import { DotCarousel } from "./DotCarousel";
+import { CareerTimelineCarousel } from "./CareerTimelineCarousel";
 
 const EXPERIENCE_QUERY =
   defineQuery(`*[_type == "experience"] | order(startDate desc){
@@ -28,197 +28,200 @@ const EXPERIENCE_QUERY =
   companyWebsite
 }`);
 
+interface ExperienceRow {
+  company?: string | null;
+  position?: string | null;
+  positionFr?: string | null;
+  employmentType?: string | null;
+  location?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  current?: boolean | null;
+  // biome-ignore lint/suspicious/noExplicitAny: Sanity CMS Portable Text is dynamic.
+  description?: any;
+  // biome-ignore lint/suspicious/noExplicitAny: Sanity CMS Portable Text is dynamic.
+  descriptionFr?: any;
+  responsibilities?: string[] | null;
+  responsibilitiesFr?: string[] | null;
+  achievements?: string[] | null;
+  achievementsFr?: string[] | null;
+  technologies?: Array<{ name?: string | null }> | null;
+  // biome-ignore lint/suspicious/noExplicitAny: Sanity image fields use generated dynamic types.
+  companyLogo?: any;
+}
+
 export async function ExperienceSection({
   locale = "en",
 }: {
   locale?: Locale;
 }) {
-  const { data: experiences } = await sanityFetch({ query: EXPERIENCE_QUERY });
+  const { data: experiences } = await sanityFetch<ExperienceRow[]>({
+    query: EXPERIENCE_QUERY,
+  });
   const dict = getDictionary(locale);
   const isFr = locale === "fr";
 
-  if (!experiences || experiences.length === 0) {
-    return null;
-  }
+  if (!experiences?.length) return null;
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString(
-      locale === "fr" ? "fr-FR" : "en-US",
-      {
-        year: "numeric",
-        month: "short",
-      },
-    );
-  };
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString(isFr ? "fr-FR" : "en-US", {
+      year: "numeric",
+      month: "short",
+    });
+
+  const timelineItems = experiences.map((exp) => {
+    const position = isFr
+      ? exp.positionFr || exp.position
+      : exp.position || exp.positionFr;
+    const description = isFr
+      ? exp.descriptionFr || exp.description
+      : exp.description || exp.descriptionFr;
+    const responsibilities = isFr
+      ? exp.responsibilitiesFr || exp.responsibilities || []
+      : exp.responsibilities || exp.responsibilitiesFr || [];
+    const achievements = isFr
+      ? exp.achievementsFr || exp.achievements || []
+      : exp.achievements || exp.achievementsFr || [];
+    const period = `${exp.startDate ? formatDate(exp.startDate) : ""} - ${
+      exp.current
+        ? dict.experience.present
+        : exp.endDate
+          ? formatDate(exp.endDate)
+          : "N/A"
+    }`;
+
+    return {
+      company: exp.company || "",
+      period,
+      current: Boolean(exp.current),
+      content: (
+        <article className="@container/card overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div className="h-1.5 bg-primary" />
+          <div className="p-5 @md/card:p-8">
+            <div className="mb-5 flex flex-col gap-4 @md/card:flex-row @md/card:items-start">
+              {exp.companyLogo ? (
+                <div className="relative size-14 shrink-0 overflow-hidden rounded-lg border bg-background @md/card:size-16">
+                  <Image
+                    src={urlFor(exp.companyLogo).width(128).height(128).url()}
+                    alt={`${exp.company || "Company"} logo`}
+                    fill
+                    sizes="64px"
+                    className="object-contain p-1"
+                  />
+                </div>
+              ) : null}
+
+              <div className="min-w-0 flex-1">
+                <h3 className="text-xl font-semibold leading-tight @md/card:text-2xl">
+                  {position}
+                </h3>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <p className="font-medium text-primary @md/card:text-lg">
+                    {exp.company}
+                  </p>
+                  {exp.employmentType ? (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-sm text-muted-foreground">
+                        {exp.employmentType}
+                      </span>
+                    </>
+                  ) : null}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground @md/card:text-sm">
+                  <span>{period}</span>
+                  {exp.location ? (
+                    <>
+                      <span>•</span>
+                      <span>{exp.location}</span>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            {description ? (
+              <div className="mb-6 text-sm leading-7 text-muted-foreground @md/card:text-base">
+                <PortableText value={description} />
+              </div>
+            ) : null}
+
+            <div className="grid gap-6 @2xl/card:grid-cols-2">
+              {responsibilities.length > 0 ? (
+                <div>
+                  <h4 className="mb-3 text-sm font-semibold @md/card:text-base">
+                    {dict.experience.responsibilities}
+                  </h4>
+                  <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
+                    {responsibilities
+                      .slice(0, 4)
+                      .map((responsibility, index) => (
+                        <li
+                          key={`${exp.company}-responsibility-${index}`}
+                          className="flex gap-2"
+                        >
+                          <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                          <span>{responsibility}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {achievements.length > 0 ? (
+                <div>
+                  <h4 className="mb-3 text-sm font-semibold @md/card:text-base">
+                    {dict.experience.achievements}
+                  </h4>
+                  <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
+                    {achievements.slice(0, 4).map((achievement, index) => (
+                      <li
+                        key={`${exp.company}-achievement-${index}`}
+                        className="flex gap-2"
+                      >
+                        <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+                        <span>{achievement}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+
+            {exp.technologies?.length ? (
+              <div className="mt-6 flex flex-wrap gap-2 border-t pt-5">
+                {exp.technologies.map((technology, index) =>
+                  technology?.name ? (
+                    <span
+                      key={`${exp.company}-technology-${index}`}
+                      className="rounded-md bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+                    >
+                      {technology.name}
+                    </span>
+                  ) : null,
+                )}
+              </div>
+            ) : null}
+          </div>
+        </article>
+      ),
+    };
+  });
 
   return (
-    <section id="experience" className="py-20 px-6">
+    <section id="experience" className="px-6 py-20">
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="mb-12 text-center">
+          <h2 className="text-4xl font-bold md:text-5xl">
             {dict.experience.title}
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="mt-4 text-xl text-muted-foreground">
             {dict.experience.subtitle}
           </p>
         </div>
-
-        <DotCarousel
+        <CareerTimelineCarousel
           ariaLabel={dict.experience.title}
-          items={experiences.map(
-            (exp: {
-              company?: string | null;
-              position?: string | null;
-              positionFr?: string | null;
-              employmentType?: string | null;
-              location?: string | null;
-              startDate?: string | null;
-              endDate?: string | null;
-              current?: boolean | null;
-              // biome-ignore lint/suspicious/noExplicitAny: Sanity CMS dynamic content
-              description?: any;
-              // biome-ignore lint/suspicious/noExplicitAny: Sanity CMS dynamic content
-              descriptionFr?: any;
-              responsibilities?: string[] | null;
-              responsibilitiesFr?: string[] | null;
-              achievements?: string[] | null;
-              achievementsFr?: string[] | null;
-              technologies?: Array<{ name?: string | null }> | null;
-              // biome-ignore lint/suspicious/noExplicitAny: Sanity CMS dynamic content
-              companyLogo?: any;
-              companyWebsite?: string | null;
-            }) => {
-              const position = isFr
-                ? exp.positionFr || exp.position
-                : exp.position;
-              const description = isFr
-                ? exp.descriptionFr || exp.description
-                : exp.description;
-              const responsibilities = isFr
-                ? exp.responsibilitiesFr || exp.responsibilities || []
-                : exp.responsibilities || [];
-              const achievements = isFr
-                ? exp.achievementsFr || exp.achievements || []
-                : exp.achievements || [];
-
-              return (
-                <div
-                  key={`${exp.company}-${exp.position}-${exp.startDate}`}
-                  className="relative pl-8 pb-8 border-l-2 border-muted last:border-l-0"
-                >
-                  {/* Timeline dot */}
-                  <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-background" />
-
-                  <div className="@container/card bg-card border rounded-lg p-4 @md/card:p-6 hover:shadow-lg transition-shadow">
-                    <div className="flex flex-col @md/card:flex-row @md/card:items-start gap-4 mb-4">
-                      {exp.companyLogo && (
-                        <div className="relative w-12 h-12 @md/card:w-16 @md/card:h-16 rounded-lg overflow-hidden border shrink-0">
-                          <Image
-                            src={urlFor(exp.companyLogo)
-                              .width(64)
-                              .height(64)
-                              .url()}
-                            alt={`${exp.company} company logo`}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xl @md/card:text-2xl font-semibold line-clamp-2">
-                          {position}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <p className="text-base @md/card:text-lg text-primary font-medium truncate">
-                            {exp.company}
-                          </p>
-                          {exp.employmentType && (
-                            <>
-                              <span className="text-muted-foreground">•</span>
-                              <span className="text-xs @md/card:text-sm text-muted-foreground">
-                                {exp.employmentType}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 mt-2 text-xs @md/card:text-sm text-muted-foreground">
-                          <span>
-                            {exp.startDate && formatDate(exp.startDate)} -{" "}
-                            {exp.current
-                              ? dict.experience.present
-                              : exp.endDate
-                                ? formatDate(exp.endDate)
-                                : "N/A"}
-                          </span>
-                          {exp.location && (
-                            <>
-                              <span>•</span>
-                              <span className="truncate">{exp.location}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {description && (
-                      <div className="text-muted-foreground mb-4 text-sm @md/card:text-base">
-                        <PortableText value={description} />
-                      </div>
-                    )}
-
-                    {responsibilities && responsibilities.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="font-semibold mb-2 text-sm @md/card:text-base">
-                          {dict.experience.responsibilities}
-                        </h4>
-                        <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs @md/card:text-sm">
-                          {responsibilities.map((resp, idx) => (
-                            <li key={`${exp.company}-resp-${idx}`}>{resp}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {achievements && achievements.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="font-semibold mb-2 text-sm @md/card:text-base">
-                          {dict.experience.achievements}
-                        </h4>
-                        <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs @md/card:text-sm">
-                          {achievements.map((achievement, idx) => (
-                            <li key={`${exp.company}-achievement-${idx}`}>
-                              {achievement}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {exp.technologies && exp.technologies.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 @md/card:gap-2 mt-4">
-                        {exp.technologies.map((tech, techIdx) => {
-                          const techData =
-                            tech && typeof tech === "object" && "name" in tech
-                              ? tech
-                              : null;
-                          return techData?.name ? (
-                            <span
-                              key={`${exp.company}-tech-${techIdx}`}
-                              className="px-2 py-0.5 @md/card:px-3 @md/card:py-1 text-xs rounded-full bg-primary/10 text-primary"
-                            >
-                              {techData.name}
-                            </span>
-                          ) : null;
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            },
-          )}
-          slideClassName="px-1"
+          items={timelineItems}
         />
       </div>
     </section>

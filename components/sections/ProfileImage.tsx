@@ -18,7 +18,6 @@ export function ProfileImage({
   firstName,
   lastName,
 }: ProfileImageProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const { toggleSidebar, open } = useSidebar();
   const { enabled, isLoaded, isSignedIn, openSignIn } = useOptionalAuth();
@@ -44,14 +43,7 @@ export function ProfileImage({
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="relative aspect-square rounded-2xl overflow-hidden border-4 border-primary/20 block group cursor-pointer w-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      aria-label={dict.misc.toggleChat}
-    >
+    <div className="group relative block aspect-square w-full overflow-hidden rounded-2xl border-4 border-primary/20">
       <Image
         src={activeImage.url}
         alt={activeImage.alt || `${firstName} ${lastName}`}
@@ -59,11 +51,10 @@ export function ProfileImage({
         sizes="(max-width: 768px) 90vw, 600px"
         quality={100}
         className="object-cover transition-transform duration-700 group-hover:scale-105"
-        priority
+        preload
       />
 
-      {/* Online Badge */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-full">
+      <div className="pointer-events-none absolute right-4 top-4 z-20 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 backdrop-blur-sm">
         <div className="relative">
           <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
           <div className="absolute inset-0 w-2.5 h-2.5 bg-green-500 rounded-full animate-ping" />
@@ -73,9 +64,18 @@ export function ProfileImage({
         </span>
       </div>
 
+      <button
+        type="button"
+        onClick={handleClick}
+        className="absolute inset-0 z-10 cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/70 focus-visible:ring-inset"
+        aria-label={dict.misc.toggleChat}
+      >
+        <span className="sr-only">{dict.misc.toggleChat}</span>
+      </button>
+
       {images.length > 1 ? (
         <div
-          className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-2 backdrop-blur-sm"
+          className="absolute bottom-4 left-1/2 z-30 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-2 backdrop-blur-sm"
           role="tablist"
           aria-label={`${firstName} ${lastName} profile images`}
         >
@@ -86,23 +86,21 @@ export function ProfileImage({
               role="tab"
               aria-selected={imageIndex === activeIndex}
               aria-label={`${firstName} ${lastName} image ${imageIndex + 1}`}
-              onClick={() => setActiveIndex(imageIndex)}
-              className={`h-1.5 rounded-full transition-all ${
+              onClick={(event) => {
+                event.stopPropagation();
+                setActiveIndex(imageIndex);
+              }}
+              className={`h-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white ${
                 imageIndex === activeIndex
-                  ? "w-5 bg-white"
-                  : "w-1.5 bg-white/60"
+                  ? "w-6 bg-white"
+                  : "w-2 bg-white/60 hover:bg-white/90"
               }`}
             />
           ))}
         </div>
       ) : null}
 
-      {/* Hover Overlay */}
-      <div
-        className={`absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center transition-opacity duration-300 ${
-          isHovered ? "opacity-100" : "opacity-0"
-        }`}
-      >
+      <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/70 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100">
         <div className="text-center space-y-3">
           {open ? (
             <X className="w-12 h-12 text-white mx-auto" />
@@ -118,6 +116,6 @@ export function ProfileImage({
           </div>
         </div>
       </div>
-    </button>
+    </div>
   );
 }
