@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { BlogCard } from "@/components/blog/BlogCard";
 import { CategoryIcon } from "@/components/blog/CategoryIcon";
@@ -7,6 +8,7 @@ import { getServerLocale } from "@/components/server-context";
 import {
   blogCategoryText,
   blogImageUrl,
+  blogPostImageUrl,
   getBlogCategories,
   getBlogPosts,
   getBlogSettings,
@@ -52,6 +54,9 @@ export default async function BlogPage() {
     .filter((post) => post._id !== featured?._id)
     .slice(0, 6);
   const trending = posts.filter((post) => post.trending).slice(0, 3);
+  const featuredImage = featured
+    ? blogPostImageUrl(featured, 1800, 1100)
+    : null;
   const heroTitle =
     (isFr
       ? settings.heroTitleFr || settings.heroTitle
@@ -69,36 +74,67 @@ export default async function BlogPage() {
 
   return (
     <main>
-      <section className="border-b bg-muted/30">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-14 lg:grid-cols-[1.15fr_.85fr] lg:py-20">
-          <div>
-            <p className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
+      <section className="relative min-h-[min(760px,82svh)] overflow-hidden bg-foreground text-background">
+        {featuredImage && (
+          <Image
+            src={featuredImage}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover opacity-45"
+          />
+        )}
+        <div className="absolute inset-0 bg-black/45" />
+        <div className="relative mx-auto flex min-h-[min(760px,82svh)] max-w-7xl flex-col justify-end px-6 pb-16 pt-28 sm:pb-20">
+          <div className="max-w-4xl">
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-white/75">
               <Sparkles className="size-4" />
               {isFr ? "Perspectives de Yeiayel" : "Insights by Yeiayel"}
             </p>
-            <h1 className="mt-5 max-w-4xl text-4xl font-bold tracking-tight sm:text-6xl">
+            <h1 className="mt-5 break-words text-4xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
               {heroTitle}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/75">
               {heroDescription}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/blog/articles"
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground"
+                className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-semibold text-black"
               >
                 {isFr ? "Explorer les articles" : "Explore articles"}{" "}
                 <ArrowRight className="size-4" />
               </Link>
               <Link
                 href="/blog/search"
-                className="rounded-md border bg-background px-5 py-3 text-sm font-semibold hover:bg-muted"
+                className="rounded-md border border-white/45 bg-black/20 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm hover:bg-black/35"
               >
                 {isFr ? "Recherche avancée" : "Advanced search"}
               </Link>
             </div>
           </div>
-          {featured && <BlogCard post={featured} locale={locale} />}
+          {featured && (
+            <Link
+              href={`/blog/${featured.slug}`}
+              className="mt-12 grid max-w-4xl gap-2 border-t border-white/35 pt-5 text-white sm:grid-cols-[1fr_auto] sm:items-end"
+            >
+              <span>
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+                  {isFr ? "Article à la une" : "Featured story"}
+                </span>
+                <span className="mt-2 block text-lg font-semibold sm:text-xl">
+                  {isFr
+                    ? featured.titleFr || featured.title
+                    : featured.title || featured.titleFr}
+                </span>
+              </span>
+              <span className="inline-flex items-center gap-2 text-sm font-semibold">
+                {isFr ? "Lire maintenant" : "Read now"}
+                <ArrowRight className="size-4" />
+              </span>
+            </Link>
+          )}
         </div>
       </section>
 
@@ -119,14 +155,14 @@ export default async function BlogPage() {
             {isFr ? "Toutes les catégories" : "All categories"}
           </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid border-y sm:grid-cols-2 lg:grid-cols-4">
           {categories.slice(0, 8).map((category) => {
             const text = blogCategoryText(category, locale);
             return (
               <Link
                 key={category._id}
                 href={`/blog/categories/${category.slug}`}
-                className="group border-b py-5 transition-colors hover:border-primary"
+                className="group border-b p-5 transition-colors hover:bg-muted/35 sm:border-r"
               >
                 <CategoryIcon
                   icon={category.icon}

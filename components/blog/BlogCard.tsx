@@ -59,7 +59,7 @@ export function BlogCard({ post, locale }: { post: BlogPost; locale: Locale }) {
             {readLabel}
           </span>
         </div>
-        <h2 className="text-xl font-semibold leading-tight text-foreground">
+        <h2 className="break-words text-xl font-semibold leading-tight text-foreground">
           <Link
             href={`/blog/${post.slug}`}
             className="transition-colors hover:text-primary"

@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, Compass, Layers3 } from "lucide-react";
 import Link from "next/link";
 import { CategoryIcon } from "@/components/blog/CategoryIcon";
 import { getServerLocale } from "@/components/server-context";
@@ -10,51 +10,102 @@ export default async function CategoriesPage() {
     getBlogCategories(),
   ]);
   const isFr = locale === "fr";
+  const articleTotal = categories.reduce(
+    (total, category) => total + (category.articleCount || 0),
+    0,
+  );
+
   return (
-    <main className="mx-auto max-w-7xl px-6 py-12 sm:py-16">
-      <p className="text-sm font-semibold text-primary">
-        {isFr ? "Explorer" : "Explore"}
-      </p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
-        {isFr ? "Toutes les catégories" : "All categories"}
-      </h1>
-      <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
-        {isFr
-          ? "Des articles organisés selon les compétences, technologies et enjeux professionnels du portfolio."
-          : "Articles organized around the portfolio’s skills, technologies, and professional focus areas."}
-      </p>
-      {categories.length ? (
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category) => {
-            const text = blogCategoryText(category, locale);
-            return (
-              <Link
-                key={category._id}
-                href={`/blog/categories/${category.slug}`}
-                className="group flex min-h-56 flex-col border-b py-6 transition-colors hover:border-primary"
-              >
-                <div className="flex items-start justify-between">
-                  <CategoryIcon icon={category.icon} slug={category.slug} />
-                  <ArrowUpRight className="size-5 text-muted-foreground group-hover:text-primary" />
-                </div>
-                <h2 className="mt-7 text-xl font-semibold">{text.title}</h2>
-                <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
-                  {text.description}
-                </p>
-                <p className="mt-auto pt-5 text-xs font-semibold text-primary">
-                  {category.articleCount || 0} {isFr ? "articles" : "articles"}
-                </p>
-              </Link>
-            );
-          })}
+    <main>
+      <section className="border-b">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:py-20 lg:grid-cols-[1fr_280px] lg:items-end">
+          <div className="max-w-4xl">
+            <p className="flex items-center gap-2 text-sm font-semibold text-primary">
+              <Compass className="size-4" />
+              {isFr ? "Carte éditoriale" : "Editorial map"}
+            </p>
+            <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-6xl">
+              {isFr
+                ? "Explorez les idées par domaine"
+                : "Explore ideas by professional domain"}
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+              {isFr
+                ? "Une bibliothèque structurée autour de la data, de l'IA, de l'ingénierie, de la sécurité et de l'innovation numérique."
+                : "A structured library spanning data, AI, engineering, security, education, and practical digital innovation."}
+            </p>
+          </div>
+          <div className="flex gap-8 border-t pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+            <Metric
+              value={categories.length}
+              label={isFr ? "domaines" : "domains"}
+            />
+            <Metric
+              value={articleTotal}
+              label={isFr ? "articles" : "articles"}
+            />
+          </div>
         </div>
-      ) : (
-        <p className="mt-12 rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-          {isFr
-            ? "Les catégories apparaîtront après leur publication dans Sanity."
-            : "Categories will appear after they are published in Sanity."}
-        </p>
-      )}
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-12 sm:py-16">
+        {categories.length ? (
+          <div className="divide-y border-y">
+            {categories.map((category, index) => {
+              const text = blogCategoryText(category, locale);
+              return (
+                <Link
+                  key={category._id}
+                  href={`/blog/categories/${category.slug}`}
+                  className="group grid gap-5 py-7 transition-colors hover:bg-muted/30 sm:grid-cols-[54px_minmax(180px,0.8fr)_1.2fr_auto] sm:items-center sm:px-4"
+                >
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex items-center gap-4">
+                    <CategoryIcon
+                      icon={category.icon}
+                      slug={category.slug}
+                      className="size-7 shrink-0 text-primary"
+                    />
+                    <h2 className="text-xl font-semibold">{text.title}</h2>
+                  </div>
+                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                    {text.description}
+                  </p>
+                  <div className="flex items-center justify-between gap-5 sm:justify-end">
+                    <span className="whitespace-nowrap text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      {category.articleCount || 0}{" "}
+                      {isFr ? "articles" : "articles"}
+                    </span>
+                    <ArrowRight className="size-5 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="grid place-items-center border-y py-20 text-center">
+            <Layers3 className="size-9 text-muted-foreground" />
+            <p className="mt-4 text-muted-foreground">
+              {isFr
+                ? "Les catégories apparaîtront après leur publication."
+                : "Categories will appear after publication."}
+            </p>
+          </div>
+        )}
+      </section>
     </main>
+  );
+}
+
+function Metric({ value, label }: { value: number; label: string }) {
+  return (
+    <div>
+      <p className="text-3xl font-bold">{value}</p>
+      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+    </div>
   );
 }

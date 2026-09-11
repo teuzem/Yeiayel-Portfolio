@@ -25,6 +25,11 @@ function loadLocalEnvFile() {
 loadLocalEnvFile();
 
 const configured = (name) => Boolean(process.env[name]?.trim());
+const researchTimeout = Number(
+  process.env.TWIN_RESEARCH_TIMEOUT_MS?.trim() || "12000",
+);
+const researchDepth =
+  process.env.TWIN_RESEARCH_DEPTH?.trim().toLowerCase() || "advanced";
 const checks = [
   {
     label: "Application URL",
@@ -73,6 +78,19 @@ const checks = [
       process.env.TWIN_RESEARCH_ENABLED?.trim().toLowerCase() !== "false",
     variables: ["TAVILY_API_KEY", "TWIN_RESEARCH_ENABLED"],
   },
+  {
+    label: "Tavily page extraction timeout",
+    ok:
+      Number.isFinite(researchTimeout) &&
+      researchTimeout >= 10_000 &&
+      researchTimeout <= 20_000,
+    variables: ["TWIN_RESEARCH_TIMEOUT_MS"],
+  },
+  {
+    label: "Tavily search depth",
+    ok: ["ultra-fast", "fast", "basic", "advanced"].includes(researchDepth),
+    variables: ["TWIN_RESEARCH_DEPTH"],
+  },
 ];
 
 console.log("Production environment readiness");
@@ -83,9 +101,13 @@ for (const check of checks) {
     const value =
       name === "TWIN_RESEARCH_ENABLED"
         ? process.env[name]?.trim() || "(defaults to enabled)"
-        : configured(name)
-          ? "configured"
-          : "missing";
+        : name === "TWIN_RESEARCH_TIMEOUT_MS"
+          ? `${researchTimeout} ms`
+          : name === "TWIN_RESEARCH_DEPTH"
+            ? researchDepth
+            : configured(name)
+              ? "configured"
+              : "missing";
     console.log(`         ${name}: ${value}`);
   }
 }

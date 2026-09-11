@@ -51,7 +51,8 @@ interface StoredFeedbackProfile extends TwinFeedbackProfile {
 }
 
 const QUICK_PROMPTS = ["experience", "skills", "built", "whoAreYou"] as const;
-const MEMORY_PREFIX = "yeiayel-ai-twin-history-v2";
+const MEMORY_KEY = "yeiayel-ai-twin-history-v3";
+const LEGACY_MEMORY_PREFIX = "yeiayel-ai-twin-history-v2";
 const REVIEW_PREFIX = "yeiayel-ai-twin-review-v1";
 const FEEDBACK_PROFILE_PREFIX = "yeiayel-ai-twin-feedback-profile-v1";
 const MAX_STORED_TURNS = 40;
@@ -60,8 +61,8 @@ function createTurnId(role: ChatTurn["role"]): string {
   return `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function memoryKey(locale: "en" | "fr"): string {
-  return `${MEMORY_PREFIX}-${locale}`;
+function legacyMemoryKey(locale: "en" | "fr"): string {
+  return `${LEGACY_MEMORY_PREFIX}-${locale}`;
 }
 
 function reviewKey(locale: "en" | "fr", userId?: string | null): string {
@@ -129,7 +130,9 @@ function storeFeedbackProfile(
 
 function readStoredTurns(locale: "en" | "fr"): ChatTurn[] {
   try {
-    const value = window.localStorage.getItem(memoryKey(locale));
+    const value =
+      window.localStorage.getItem(MEMORY_KEY) ||
+      window.localStorage.getItem(legacyMemoryKey(locale));
     if (!value) return [];
     const parsed: unknown = JSON.parse(value);
     if (!Array.isArray(parsed)) return [];
@@ -153,15 +156,12 @@ function readStoredTurns(locale: "en" | "fr"): ChatTurn[] {
   }
 }
 
-function storeTurns(locale: "en" | "fr", turns: ChatTurn[]): void {
+function storeTurns(turns: ChatTurn[]): void {
   try {
     const persistentTurns = turns
       .filter((turn) => !turn.error)
       .slice(-MAX_STORED_TURNS);
-    window.localStorage.setItem(
-      memoryKey(locale),
-      JSON.stringify(persistentTurns),
-    );
+    window.localStorage.setItem(MEMORY_KEY, JSON.stringify(persistentTurns));
   } catch {
     // Browser storage is optional; in-memory chat continues to work.
   }
@@ -305,7 +305,7 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
 
   useEffect(() => {
     if (!memoryReady || loadedMemoryLocale.current !== locale) return;
-    storeTurns(locale, turns);
+    storeTurns(turns);
   }, [locale, memoryReady, turns]);
 
   useEffect(() => {
@@ -409,7 +409,8 @@ export function TwinChat({ profile }: { profile: TwinProfile | null }) {
     setRetryText("");
     setBusy(false);
     try {
-      window.localStorage.removeItem(memoryKey(locale));
+      window.localStorage.removeItem(MEMORY_KEY);
+      window.localStorage.removeItem(legacyMemoryKey(locale));
     } catch {
       // Clearing in-memory history is still sufficient.
     }

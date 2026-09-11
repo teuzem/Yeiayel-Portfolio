@@ -11,6 +11,7 @@ import {
 } from "@/lib/twin";
 import { buildTwinKnowledgeFromSanity } from "@/lib/twin-context";
 import {
+  ensureResearchCitations,
   isResearchFollowUp,
   type ResearchSource,
   type ResearchStatus,
@@ -20,6 +21,7 @@ import {
   shouldResearch,
   unavailableResearchPrompt,
 } from "@/lib/twin-research";
+import { retrieveTwinContext } from "@/lib/twin-retrieval";
 
 export interface TwinChatResponse {
   ok: boolean;
@@ -32,6 +34,7 @@ export interface TwinChatResponse {
   researchProvider?: "tavily";
   researchStatus?: ResearchStatus;
   sources?: ResearchSource[];
+  retrievalChunkCount?: number;
 }
 
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/responses";
@@ -142,16 +145,24 @@ function responseLanguageReminder(locale: TwinLocale): string {
 
 function buildResearchFallback(
   locale: TwinLocale,
-  hasSources: boolean,
+  research?: {
+    summary: string;
+    sources: ResearchSource[];
+  } | null,
 ): string {
-  if (locale === "fr") {
-    return hasSources
-      ? "J'ai trouvé des sources web pertinentes, mais je n'ai pas pu terminer une synthèse fiable. Consultez les sources vérifiées ci-dessous ; je préfère ne pas transformer leurs extraits en affirmations sans validation supplémentaire."
-      : "Je n'ai pas pu obtenir de source web vérifiable pour cette question en temps réel. Je préfère ne pas inventer de faits. Précisez l'identité, l'organisation, le lieu ou la période recherchée, puis relancez la question.";
+  if (research?.sources.length) {
+    return ensureResearchCitations(
+      locale === "fr"
+        ? `Voici la synthèse vérifiable retournée par la recherche en direct :\n\n${research.summary}\n\nLe fournisseur de réponse principal n'a pas terminé sa reformulation. Cette synthèse est donc conservatrice et doit être lue avec les sources affichées.`
+        : `Here is the verifiable synthesis returned by live research:\n\n${research.summary}\n\nThe primary answer provider did not finish its reformulation, so this is a conservative synthesis that should be read with the displayed sources.`,
+      research.sources.length,
+      locale,
+    );
   }
-  return hasSources
-    ? "I found relevant web sources, but I could not complete a reliable synthesis. Review the verified sources below; I will not turn their excerpts into claims without further validation."
-    : "I could not obtain a verifiable live web source for this question. I will not invent facts. Confirm the exact identity, organization, location, or time period, then retry with those details.";
+  if (locale === "fr") {
+    return "Je n'ai pas pu obtenir de source web vérifiable pour cette question en temps réel. Je préfère ne pas inventer de faits. Précisez l'identité, l'organisation, le lieu ou la période recherchée, puis relancez la question.";
+  }
+  return "I could not obtain a verifiable live web source for this question. I will not invent facts. Confirm the exact identity, organization, location, or time period, then retry with those details.";
 }
 
 function researchQueryForConversation(
@@ -166,6 +177,14 @@ function researchQueryForConversation(
 
   if (!previousQuestion) return question;
   return `Previous researched topic: ${previousQuestion}\nFollow-up question: ${question}`;
+}
+
+function retrievalQueryForConversation(messages: ChatMessage[]): string {
+  return messages
+    .filter((message) => message.role === "user")
+    .slice(-3)
+    .map((message) => message.content)
+    .join("\n");
 }
 
 function parseOpenAIText(data: unknown): string {
@@ -228,6 +247,7 @@ async function callOpenAI(options: {
   system: string;
   messages: ChatMessage[];
   timeoutMs: number;
+  maxOutputTokens: number;
 }): Promise<string> {
   const response = await fetchWithTimeout(
     OPENAI_ENDPOINT,
@@ -241,7 +261,7 @@ async function callOpenAI(options: {
         model: options.model,
         instructions: options.system,
         input: toProviderMessages(options.messages),
-        max_output_tokens: 1_400,
+        max_output_tokens: options.maxOutputTokens,
         store: false,
       }),
     },
@@ -266,6 +286,7 @@ async function callOpenRouter(options: {
   messages: ChatMessage[];
   locale: TwinLocale;
   timeoutMs: number;
+  maxOutputTokens: number;
 }): Promise<string> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
   const response = await fetchWithTimeout(
@@ -289,7 +310,7 @@ async function callOpenRouter(options: {
           },
         ],
         temperature: 0.45,
-        max_tokens: 1_400,
+        max_tokens: options.maxOutputTokens,
       }),
     },
     options.timeoutMs,
@@ -298,7 +319,7 @@ async function callOpenRouter(options: {
   if (!response.ok) {
     throw new ProviderError(
       `OpenRouter ${options.model} returned ${response.status}`,
-      [401, 403].includes(response.status),
+      [401, 403, 429].includes(response.status),
     );
   }
   const message = parseOpenRouterText(data);
@@ -317,6 +338,11 @@ export async function chatWithTwin(
   const lastQuestion = messages.at(-1)?.content || "";
   const { context, profile: serverProfile } =
     await buildTwinKnowledgeFromSanity(locale);
+  const retrieval = retrieveTwinContext(
+    context,
+    retrievalQueryForConversation(messages),
+    locale,
+  );
   const profile = serverProfile || normalizeProfile(clientProfile);
   const usingRealContext = Boolean(
     serverProfile ||
@@ -336,6 +362,7 @@ export async function chatWithTwin(
           : "Please enter a question.",
       source: "local",
       usingRealContext,
+      retrievalChunkCount: retrieval.chunkCount,
     };
   }
 
@@ -344,6 +371,10 @@ export async function chatWithTwin(
     ? Math.max(10_000, Math.min(55_000, configuredBudget))
     : DEFAULT_REQUEST_BUDGET_MS;
   const deadline = Date.now() + budgetMs;
+  const configuredMaxOutputTokens = Number(process.env.TWIN_MAX_OUTPUT_TOKENS);
+  const maxOutputTokens = Number.isFinite(configuredMaxOutputTokens)
+    ? Math.max(800, Math.min(4_000, configuredMaxOutputTokens))
+    : 2_200;
   const hasRecentWebResearch = messages
     .slice(-6, -1)
     .some((message) => message.webResearch);
@@ -354,8 +385,8 @@ export async function chatWithTwin(
     process.env.TWIN_RESEARCH_TIMEOUT_MS,
   );
   const researchTimeoutMs = Number.isFinite(configuredResearchTimeout)
-    ? Math.max(2_000, Math.min(10_000, configuredResearchTimeout))
-    : 7_000;
+    ? Math.max(4_000, Math.min(20_000, configuredResearchTimeout))
+    : 15_000;
   const researchLookup = researchAttempted
     ? await researchWithTavily(
         researchQueryForConversation(messages, lastQuestion, followUpResearch),
@@ -387,40 +418,49 @@ export async function chatWithTwin(
       researched: false,
       researchAttempted: true,
       researchStatus: researchLookup.status,
+      retrievalChunkCount: retrieval.chunkCount,
     };
   }
 
   const system = buildSystemPrompt(
     profile,
-    context,
+    retrieval.context,
     locale,
     normalizeFeedback(clientFeedback),
     researchContext,
   );
   const failures: string[] = [];
-  const remainingTimeout = () =>
-    Math.max(1_000, Math.min(PER_ATTEMPT_TIMEOUT_MS, deadline - Date.now()));
-
   const openAIKey = process.env.OPENAI_API_KEY?.trim();
+  const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
+  const remainingTimeout = (reserveMs = 0) =>
+    Math.max(
+      1_000,
+      Math.min(PER_ATTEMPT_TIMEOUT_MS, deadline - Date.now() - reserveMs),
+    );
+
   if (openAIKey) {
+    const fallbackReserveMs = openRouterKey ? 9_000 : 1_000;
     const models = unique([
       process.env.OPENAI_CHAT_MODEL,
       "gpt-5-mini",
       "gpt-4.1-mini",
     ]);
     for (const model of models) {
-      if (Date.now() >= deadline - 1_000) break;
+      if (Date.now() >= deadline - fallbackReserveMs - 1_000) break;
       try {
         const message = await callOpenAI({
           apiKey: openAIKey,
           model,
           system,
           messages,
-          timeoutMs: remainingTimeout(),
+          timeoutMs: remainingTimeout(fallbackReserveMs),
+          maxOutputTokens,
         });
         return {
           ok: true,
-          message,
+          message: research
+            ? ensureResearchCitations(message, research.sources.length, locale)
+            : message,
           source: "openai",
           model,
           usingRealContext,
@@ -429,6 +469,7 @@ export async function chatWithTwin(
           researchProvider: research?.provider,
           researchStatus: researchLookup.status,
           sources: research?.sources,
+          retrievalChunkCount: retrieval.chunkCount,
         };
       } catch (error) {
         failures.push(error instanceof Error ? error.message : "OpenAI failed");
@@ -437,7 +478,6 @@ export async function chatWithTwin(
     }
   }
 
-  const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
   if (openRouterKey) {
     const models = unique([
       process.env.OPENROUTER_CHAT_MODEL,
@@ -454,10 +494,13 @@ export async function chatWithTwin(
           messages,
           locale,
           timeoutMs: remainingTimeout(),
+          maxOutputTokens,
         });
         return {
           ok: true,
-          message,
+          message: research
+            ? ensureResearchCitations(message, research.sources.length, locale)
+            : message,
           source: "openrouter",
           model,
           usingRealContext,
@@ -466,6 +509,7 @@ export async function chatWithTwin(
           researchProvider: research?.provider,
           researchStatus: researchLookup.status,
           sources: research?.sources,
+          retrievalChunkCount: retrieval.chunkCount,
         };
       } catch (error) {
         failures.push(
@@ -481,8 +525,13 @@ export async function chatWithTwin(
   }
 
   const fallbackMessage = researchAttempted
-    ? buildResearchFallback(locale, Boolean(research))
-    : buildLocalKnowledgeResponse(lastQuestion, profile, context, locale);
+    ? buildResearchFallback(locale, research)
+    : buildLocalKnowledgeResponse(
+        lastQuestion,
+        profile,
+        retrieval.context,
+        locale,
+      );
 
   return {
     ok: true,
@@ -494,5 +543,6 @@ export async function chatWithTwin(
     researchProvider: research?.provider,
     researchStatus: researchLookup.status,
     sources: research?.sources,
+    retrievalChunkCount: retrieval.chunkCount,
   };
 }

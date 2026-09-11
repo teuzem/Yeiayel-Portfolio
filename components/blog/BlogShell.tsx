@@ -59,7 +59,7 @@ export function BlogShell({
           <button
             type="button"
             onClick={() => setMenuOpen((value) => !value)}
-            className="grid size-10 place-items-center rounded-md border md:hidden"
+            className="grid size-10 place-items-center rounded-md border xl:hidden"
             aria-expanded={menuOpen}
             aria-label={locale === "fr" ? "Ouvrir le menu" : "Open menu"}
           >
@@ -78,7 +78,7 @@ export function BlogShell({
               {name}
             </span>
           </Link>
-          <div className="ml-auto hidden items-center gap-1 md:flex">
+          <div className="ml-auto hidden min-w-0 items-center gap-0.5 xl:flex">
             {links.map((link) => {
               const active =
                 link.href === "/blog"
@@ -89,7 +89,7 @@ export function BlogShell({
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "rounded-md px-3 py-2 text-sm transition-colors",
+                    "rounded-md px-2.5 py-2 text-sm transition-colors 2xl:px-3",
                     active
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -102,20 +102,20 @@ export function BlogShell({
           </div>
           <Link
             href="/blog/search"
-            className="ml-auto grid size-10 place-items-center rounded-md border transition-colors hover:bg-muted md:ml-1"
+            className="ml-auto grid size-10 place-items-center rounded-md border transition-colors hover:bg-muted xl:ml-1"
             aria-label={locale === "fr" ? "Rechercher" : "Search"}
           >
             <Search className="size-4" />
           </Link>
-          <div className="hidden xl:block">
+          <div className="hidden 2xl:block">
             <LocaleSwitcher />
           </div>
-          <div className="hidden xl:block">
+          <div className="hidden 2xl:block">
             <ModeToggle />
           </div>
         </nav>
         {menuOpen && (
-          <div className="border-t bg-background px-4 py-4 md:hidden">
+          <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t bg-background px-4 py-4 xl:hidden">
             <div className="mx-auto grid max-w-7xl gap-1">
               {links.map((link) => (
                 <Link

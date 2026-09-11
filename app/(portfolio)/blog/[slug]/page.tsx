@@ -139,7 +139,7 @@ export default async function BlogPostPage({
                 : `${post.readTime || 4} min read`}
             </span>
           </div>
-          <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="mt-5 break-words text-3xl font-bold tracking-tight sm:text-5xl">
             {title}
           </h1>
           {excerpt && (

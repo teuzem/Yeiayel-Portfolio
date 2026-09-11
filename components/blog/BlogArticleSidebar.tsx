@@ -51,7 +51,7 @@ export function BlogArticleSidebar({
   const adImage = blogSettingsImageUrl(ad?.image, ad?.imageUrl, 720, 480);
 
   return (
-    <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
+    <aside className="space-y-8 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:pr-2">
       {toc.length > 0 && (
         <div className="hidden lg:block">
           <SidebarSection
