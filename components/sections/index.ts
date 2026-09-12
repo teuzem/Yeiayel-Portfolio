@@ -9,6 +9,7 @@ export { EducationSection } from "./EducationSection";
 export { ExperienceSection } from "./ExperienceSection";
 export { HeroSection } from "./HeroSection";
 export { ProjectsSection } from "./ProjectsSection";
+export { ResponsiveDotCarousel } from "./ResponsiveDotCarousel";
 export { ServicesSection } from "./ServicesSection";
 export { SkillsSection } from "./SkillsSection";
 export { TestimonialsSection } from "./TestimonialsSection";
