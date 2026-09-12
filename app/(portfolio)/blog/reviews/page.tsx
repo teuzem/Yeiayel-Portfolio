@@ -50,7 +50,7 @@ export default async function ReviewsPage() {
               return (
                 <article
                   key={product._id}
-                  className="group flex min-h-[470px] flex-col overflow-hidden border-y bg-card"
+                  className="group flex min-h-[470px] flex-col overflow-hidden rounded-lg bg-card shadow-[0_18px_55px_-36px_rgba(0,0,0,0.55)] ring-1 ring-foreground/10 transition duration-300 hover:-translate-y-1"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                     {image ? (

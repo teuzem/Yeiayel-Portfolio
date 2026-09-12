@@ -8,7 +8,7 @@ const components: PortableTextComponents = {
     h2: ({ children, value }) => (
       <h2
         id={value?._key ? `section-${value._key}` : undefined}
-        className="mt-10 scroll-mt-24 text-3xl font-bold tracking-tight"
+        className="mb-4 mt-14 scroll-mt-24 text-3xl font-bold leading-tight tracking-tight"
       >
         {children}
       </h2>
@@ -16,28 +16,30 @@ const components: PortableTextComponents = {
     h3: ({ children, value }) => (
       <h3
         id={value?._key ? `section-${value._key}` : undefined}
-        className="mt-8 scroll-mt-24 text-2xl font-semibold tracking-tight"
+        className="mb-3 mt-10 scroll-mt-24 text-2xl font-semibold leading-tight tracking-tight"
       >
         {children}
       </h3>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="my-8 border-l-4 border-primary pl-5 text-lg italic text-muted-foreground">
+      <blockquote className="my-10 rounded-r-lg border-l-4 border-primary bg-muted/45 px-6 py-5 text-lg italic leading-8 text-foreground/80">
         {children}
       </blockquote>
     ),
     normal: ({ children }) => (
-      <p className="my-5 leading-8 text-muted-foreground">{children}</p>
+      <p className="my-6 text-[1.04rem] leading-8 text-foreground/75">
+        {children}
+      </p>
     ),
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="my-5 list-disc space-y-2 pl-6 text-muted-foreground">
+      <ul className="my-6 list-disc space-y-3 pl-6 leading-7 text-foreground/75 marker:text-primary">
         {children}
       </ul>
     ),
     number: ({ children }) => (
-      <ol className="my-5 list-decimal space-y-2 pl-6 text-muted-foreground">
+      <ol className="my-6 list-decimal space-y-3 pl-6 leading-7 text-foreground/75 marker:font-semibold marker:text-primary">
         {children}
       </ol>
     ),
@@ -62,7 +64,7 @@ const components: PortableTextComponents = {
       const imageUrl = blogImageUrl(value, 1440, 900);
       if (!imageUrl) return null;
       return (
-        <figure className="my-8 overflow-hidden rounded-lg border bg-muted">
+        <figure className="my-10 overflow-hidden rounded-lg bg-muted shadow-[0_18px_50px_-36px_rgba(0,0,0,0.65)] ring-1 ring-foreground/10">
           <Image
             src={imageUrl}
             alt={value?.alt || ""}

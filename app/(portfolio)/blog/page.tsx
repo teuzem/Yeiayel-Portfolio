@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, Newspaper, TrendingUp } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -89,7 +89,7 @@ export default async function BlogPage() {
         <div className="relative mx-auto flex min-h-[min(760px,82svh)] max-w-7xl flex-col justify-end px-6 pb-16 pt-28 sm:pb-20">
           <div className="max-w-4xl">
             <p className="inline-flex items-center gap-2 text-sm font-semibold text-white/75">
-              <Sparkles className="size-4" />
+              <Newspaper className="size-4" />
               {isFr ? "Perspectives de Yeiayel" : "Insights by Yeiayel"}
             </p>
             <h1 className="mt-5 break-words text-4xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
@@ -155,14 +155,14 @@ export default async function BlogPage() {
             {isFr ? "Toutes les catégories" : "All categories"}
           </Link>
         </div>
-        <div className="grid border-y sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
           {categories.slice(0, 8).map((category) => {
             const text = blogCategoryText(category, locale);
             return (
               <Link
                 key={category._id}
                 href={`/blog/categories/${category.slug}`}
-                className="group border-b p-5 transition-colors hover:bg-muted/35 sm:border-r"
+                className="group rounded-lg px-2 py-5 transition-colors hover:bg-muted/45"
               >
                 <CategoryIcon
                   icon={category.icon}

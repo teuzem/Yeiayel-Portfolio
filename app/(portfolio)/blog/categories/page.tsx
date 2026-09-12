@@ -17,7 +17,7 @@ export default async function CategoriesPage() {
 
   return (
     <main>
-      <section className="border-b">
+      <section className="bg-muted/25">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:py-20 lg:grid-cols-[1fr_280px] lg:items-end">
           <div className="max-w-4xl">
             <p className="flex items-center gap-2 text-sm font-semibold text-primary">
@@ -35,7 +35,7 @@ export default async function CategoriesPage() {
                 : "A structured library spanning data, digital systems, engineering, security, education, and practical innovation."}
             </p>
           </div>
-          <div className="flex gap-8 border-t pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+          <div className="flex gap-3">
             <Metric
               value={categories.length}
               label={isFr ? "domaines" : "domains"}
@@ -50,14 +50,14 @@ export default async function CategoriesPage() {
 
       <section className="mx-auto max-w-7xl px-6 py-12 sm:py-16">
         {categories.length ? (
-          <div className="divide-y border-y">
+          <div className="grid gap-3">
             {categories.map((category, index) => {
               const text = blogCategoryText(category, locale);
               return (
                 <Link
                   key={category._id}
                   href={`/blog/categories/${category.slug}`}
-                  className="group grid gap-5 py-7 transition-colors hover:bg-muted/30 sm:grid-cols-[54px_minmax(180px,0.8fr)_1.2fr_auto] sm:items-center sm:px-4"
+                  className="group grid gap-5 rounded-lg bg-muted/25 p-5 transition-colors hover:bg-muted/50 sm:grid-cols-[42px_minmax(180px,0.8fr)_1.2fr_auto] sm:items-center sm:px-6"
                 >
                   <span className="text-xs font-semibold text-muted-foreground">
                     {String(index + 1).padStart(2, "0")}
@@ -101,8 +101,8 @@ export default async function CategoriesPage() {
 
 function Metric({ value, label }: { value: number; label: string }) {
   return (
-    <div>
-      <p className="text-3xl font-bold">{value}</p>
+    <div className="min-w-28 rounded-lg bg-background px-5 py-4 shadow-sm ring-1 ring-foreground/5">
+      <p className="text-2xl font-bold">{value}</p>
       <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </p>

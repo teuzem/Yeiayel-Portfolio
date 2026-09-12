@@ -149,8 +149,8 @@ export function BlogExplorer({
         </h1>
       ) : null}
 
-      <section className="mb-10 overflow-hidden border-y bg-background">
-        <div className="grid gap-3 py-5 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
+      <section className="mb-10 overflow-hidden rounded-lg bg-muted/30 p-3 ring-1 ring-foreground/5 sm:p-5">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
           <label className="relative">
             <span className="sr-only">
               {isFr ? "Rechercher les articles" : "Search articles"}
@@ -200,7 +200,7 @@ export function BlogExplorer({
         </div>
 
         {suggestions.length > 0 ? (
-          <div className="flex flex-wrap gap-2 border-t py-4">
+          <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
             <span className="mr-1 self-center text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               {isFr ? "Suggestions" : "Suggestions"}
             </span>
@@ -221,7 +221,7 @@ export function BlogExplorer({
         ) : null}
 
         {filtersOpen ? (
-          <div className="grid gap-4 border-t bg-muted/20 py-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-4 grid gap-4 border-t pt-5 sm:grid-cols-2 lg:grid-cols-4">
             <Filter
               label={isFr ? "Catégorie" : "Category"}
               value={category}
@@ -283,7 +283,7 @@ export function BlogExplorer({
         ) : null}
       </section>
 
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b pb-5">
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="inline-flex items-center gap-2 text-sm font-semibold">
             <LayoutGrid className="size-4 text-primary" />
@@ -295,8 +295,8 @@ export function BlogExplorer({
             </p>
           ) : null}
         </div>
-        <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-          {isFr ? "Mise à jour en direct" : "Live filtering"}
+        <p className="text-xs font-medium text-muted-foreground">
+          {isFr ? "Filtres instantanés" : "Instant filters"}
         </p>
       </div>
 
@@ -321,7 +321,7 @@ export function BlogExplorer({
           ) : null}
         </>
       ) : (
-        <div className="grid min-h-64 place-items-center border-y text-center">
+        <div className="grid min-h-64 place-items-center rounded-lg bg-muted/25 text-center ring-1 ring-foreground/5">
           <div className="max-w-md px-6">
             <Search className="mx-auto size-8 text-muted-foreground" />
             <h2 className="mt-4 text-xl font-semibold">

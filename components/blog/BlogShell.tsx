@@ -51,15 +51,17 @@ export function BlogShell({
     <div className="min-h-screen bg-background text-foreground">
       <header
         className={cn(
-          "sticky top-0 z-40 border-b transition-colors",
-          scrolled ? "bg-background/90 backdrop-blur-xl" : "bg-background",
+          "sticky top-0 z-40 transition-all",
+          scrolled
+            ? "bg-background/92 shadow-[0_10px_35px_-28px_rgba(0,0,0,0.7)] backdrop-blur-xl"
+            : "bg-background",
         )}
       >
-        <nav className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <nav className="mx-auto flex h-[4.5rem] max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
           <button
             type="button"
             onClick={() => setMenuOpen((value) => !value)}
-            className="grid size-10 place-items-center rounded-md border xl:hidden"
+            className="grid size-10 place-items-center rounded-md bg-muted/70 xl:hidden"
             aria-expanded={menuOpen}
             aria-label={locale === "fr" ? "Ouvrir le menu" : "Open menu"}
           >
@@ -71,7 +73,7 @@ export function BlogShell({
               alt={name}
               width={150}
               height={60}
-              className="h-10 w-auto max-w-36 object-contain"
+              className="h-11 w-auto max-w-36 object-contain"
               priority
             />
             <span className="hidden text-sm font-semibold sm:block">
@@ -89,10 +91,10 @@ export function BlogShell({
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "rounded-md px-2.5 py-2 text-sm transition-colors 2xl:px-3",
+                    "relative px-2.5 py-2 text-sm font-medium transition-colors 2xl:px-3",
                     active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? "text-foreground after:absolute after:inset-x-2.5 after:-bottom-1 after:h-0.5 after:bg-primary"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {locale === "fr" ? link.fr : link.en}
@@ -102,7 +104,7 @@ export function BlogShell({
           </div>
           <Link
             href="/blog/search"
-            className="ml-auto grid size-10 place-items-center rounded-md border transition-colors hover:bg-muted xl:ml-1"
+            className="ml-auto grid size-10 place-items-center rounded-md bg-muted/70 transition-colors hover:bg-muted xl:ml-1"
             aria-label={locale === "fr" ? "Rechercher" : "Search"}
           >
             <Search className="size-4" />
@@ -115,14 +117,20 @@ export function BlogShell({
           </div>
         </nav>
         {menuOpen && (
-          <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t bg-background px-4 py-4 xl:hidden">
+          <div className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto bg-background/98 px-4 py-4 shadow-xl xl:hidden">
             <div className="mx-auto grid max-w-7xl gap-1">
               {links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-md px-3 py-3 text-sm font-medium hover:bg-muted"
+                  className={cn(
+                    "rounded-md px-3 py-3 text-sm font-medium",
+                    pathname === link.href ||
+                      (link.href !== "/blog" && pathname.startsWith(link.href))
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground hover:bg-muted",
+                  )}
                 >
                   {locale === "fr" ? link.fr : link.en}
                 </Link>
@@ -136,7 +144,7 @@ export function BlogShell({
         )}
       </header>
       {children}
-      <footer className="bg-muted/20">
+      <footer className="bg-foreground text-background">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2">
             <Image
@@ -146,7 +154,7 @@ export function BlogShell({
               height={88}
               className="h-14 w-auto object-contain"
             />
-            <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-background/65">
               {locale === "fr"
                 ? "Data science, systèmes numériques, ingénierie logicielle et innovation appliquées à des besoins concrets."
                 : "Data science, digital systems, software engineering, and innovation applied to concrete needs."}
@@ -156,12 +164,12 @@ export function BlogShell({
             <h2 className="text-sm font-semibold">
               {locale === "fr" ? "Explorer" : "Explore"}
             </h2>
-            <div className="mt-4 grid gap-3 text-sm text-muted-foreground">
+            <div className="mt-4 grid gap-3 text-sm text-background/60">
               {links.slice(1, 5).map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="hover:text-primary"
+                  className="hover:text-background"
                 >
                   {locale === "fr" ? link.fr : link.en}
                 </Link>
@@ -172,23 +180,23 @@ export function BlogShell({
             <h2 className="text-sm font-semibold">
               {locale === "fr" ? "Ressources" : "Resources"}
             </h2>
-            <div className="mt-4 grid gap-3 text-sm text-muted-foreground">
-              <Link href="/blog/authors" className="hover:text-primary">
+            <div className="mt-4 grid gap-3 text-sm text-background/60">
+              <Link href="/blog/authors" className="hover:text-background">
                 {locale === "fr" ? "Auteurs" : "Authors"}
               </Link>
-              <Link href="/blog/about" className="hover:text-primary">
+              <Link href="/blog/about" className="hover:text-background">
                 {locale === "fr" ? "À propos" : "About"}
               </Link>
-              <Link href="/" className="hover:text-primary">
+              <Link href="/" className="hover:text-background">
                 {locale === "fr" ? "Portfolio" : "Portfolio"}
               </Link>
-              <Link href="/#contact" className="hover:text-primary">
+              <Link href="/#contact" className="hover:text-background">
                 {locale === "fr" ? "Contact" : "Contact"}
               </Link>
             </div>
           </div>
         </div>
-        <div className="px-6 py-6 text-center text-xs text-muted-foreground">
+        <div className="border-t border-background/10 px-6 py-6 text-center text-xs text-background/50">
           © {new Date().getUTCFullYear()} {name}.{" "}
           {locale === "fr" ? "Tous droits réservés." : "All rights reserved."}
         </div>

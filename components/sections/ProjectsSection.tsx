@@ -1,10 +1,4 @@
-import {
-  ArrowUpRight,
-  Code2,
-  ExternalLink,
-  Layers3,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowUpRight, Code2, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { defineQuery } from "next-sanity";
 import type { Locale } from "@/lib/i18n";
@@ -204,24 +198,13 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
       className="border-y bg-muted/25 px-4 py-16 sm:px-6 sm:py-20"
     >
       <div className="container mx-auto max-w-7xl">
-        <div className="mb-10 grid gap-7 border-b pb-8 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div className="max-w-3xl">
-            <p className="inline-flex items-center gap-2 text-sm font-semibold text-primary">
-              <Layers3 className="size-4" />
-              {isFr ? "Produits et plateformes" : "Products and platforms"}
-            </p>
-            <h2 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
-              {dict.projects.title}
-            </h2>
-            <p className="mt-4 text-lg leading-8 text-muted-foreground">
-              {dict.projects.subtitle}
-            </p>
-          </div>
-          <div className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
-            <ShieldCheck className="size-5 text-primary" />
-            {projects.length}{" "}
-            {isFr ? "réalisations sélectionnées" : "selected projects"}
-          </div>
+        <div className="mx-auto mb-10 max-w-3xl text-center">
+          <h2 className="text-4xl font-bold tracking-tight md:text-5xl">
+            {dict.projects.title}
+          </h2>
+          <p className="mt-4 text-lg leading-8 text-muted-foreground">
+            {dict.projects.subtitle}
+          </p>
         </div>
 
         <ResponsiveDotCarousel

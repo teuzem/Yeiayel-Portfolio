@@ -40,7 +40,7 @@ export default async function AuthorPage({
 
   return (
     <main>
-      <section className="border-b">
+      <section>
         <div className="mx-auto max-w-7xl px-6 py-8">
           <Link
             href="/blog/authors"
@@ -51,7 +51,7 @@ export default async function AuthorPage({
           </Link>
         </div>
         <div className="mx-auto grid max-w-7xl items-stretch px-6 pb-14 sm:pb-20 lg:grid-cols-[minmax(300px,0.8fr)_1.2fr]">
-          <div className="relative min-h-80 overflow-hidden bg-foreground lg:min-h-[540px]">
+          <div className="relative min-h-80 overflow-hidden rounded-t-lg bg-foreground lg:min-h-[540px] lg:rounded-l-lg lg:rounded-tr-none">
             {image ? (
               <Image
                 src={image}
@@ -67,7 +67,7 @@ export default async function AuthorPage({
               </div>
             )}
           </div>
-          <div className="flex flex-col justify-center bg-muted/35 p-7 sm:p-12 lg:p-16">
+          <div className="flex flex-col justify-center rounded-b-lg bg-muted/35 p-7 ring-1 ring-foreground/5 sm:p-12 lg:rounded-r-lg lg:rounded-bl-none lg:p-16">
             <PenLine className="size-6 text-primary" />
             <p className="mt-8 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               {isFr ? "Auteur et contributeur" : "Author and contributor"}
@@ -83,7 +83,7 @@ export default async function AuthorPage({
                 {bio}
               </p>
             )}
-            <div className="mt-10 flex items-center gap-3 border-t pt-6 text-sm font-semibold">
+            <div className="mt-10 flex w-fit items-center gap-3 rounded-full bg-background px-4 py-2 text-sm font-semibold ring-1 ring-foreground/5">
               <BookOpenText className="size-5 text-primary" />
               {authorPosts.length}{" "}
               {isFr ? "publications disponibles" : "available publications"}

@@ -28,7 +28,7 @@ export default async function CategoryPage({
 
   return (
     <main>
-      <section className="border-b bg-muted/25">
+      <section className="bg-muted/25">
         <div className="mx-auto max-w-7xl px-6 py-10 sm:py-16">
           <Link
             href="/blog/categories"
@@ -53,7 +53,7 @@ export default async function CategoryPage({
                 </p>
               )}
             </div>
-            <p className="border-t pt-5 text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+            <p className="w-fit rounded-full bg-background px-4 py-2 text-sm font-semibold text-muted-foreground shadow-sm ring-1 ring-foreground/5">
               {articleCount} {isFr ? "publications" : "publications"}
             </p>
           </div>

@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock3, ExternalLink, Star } from "lucide-react";
+import { ArrowDown, ArrowLeft, Clock3, ExternalLink, Star } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -113,7 +113,7 @@ export default async function BlogPostPage({
 
   return (
     <main className="min-h-screen bg-background">
-      <article className="container mx-auto max-w-7xl px-6 py-10 sm:py-16">
+      <article className="container mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-14">
         <Link
           href="/blog"
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
@@ -122,7 +122,7 @@ export default async function BlogPostPage({
           {isFr ? "Tous les articles" : "All articles"}
         </Link>
 
-        <header className="mt-8 max-w-4xl">
+        <header className="mt-8 max-w-5xl">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
             {category && (
               <span className="font-semibold text-primary">{category}</span>
@@ -139,7 +139,7 @@ export default async function BlogPostPage({
                 : `${post.readTime || 4} min read`}
             </span>
           </div>
-          <h1 className="mt-5 break-words text-3xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="mt-5 break-words text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
             {title}
           </h1>
           {excerpt && (
@@ -159,7 +159,7 @@ export default async function BlogPostPage({
           )}
         </header>
 
-        <figure className="mt-10 overflow-hidden rounded-lg border bg-muted">
+        <figure className="mt-10 overflow-hidden rounded-lg bg-muted shadow-[0_25px_70px_-42px_rgba(0,0,0,0.75)] ring-1 ring-foreground/10">
           <Image
             src={imageUrl}
             alt={post.featuredImage?.alt || title}
@@ -175,7 +175,7 @@ export default async function BlogPostPage({
           )}
         </figure>
 
-        <div className="mt-10 grid gap-12 lg:grid-cols-[280px_minmax(0,760px)] lg:justify-between">
+        <div className="mt-12 grid gap-12 lg:grid-cols-[290px_minmax(0,760px)] lg:justify-between xl:gap-16">
           <div className="order-2 lg:order-1">
             <BlogArticleSidebar
               locale={locale}
@@ -188,25 +188,37 @@ export default async function BlogPostPage({
 
           <div className="order-1 min-w-0 lg:order-2">
             {post.author?.name && (
-              <div className="border-y py-5 text-sm">
-                <p className="font-semibold">{post.author.name}</p>
-                {authorRole && (
-                  <p className="mt-1 text-muted-foreground">{authorRole}</p>
-                )}
-                {updatedDate && (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {isFr
-                      ? `Mis à jour le ${updatedDate}`
-                      : `Updated ${updatedDate}`}
-                  </p>
-                )}
+              <div className="flex items-center gap-4 rounded-lg bg-muted/35 p-4 ring-1 ring-foreground/5">
+                <div className="grid size-11 shrink-0 place-items-center rounded-full bg-foreground text-sm font-semibold text-background">
+                  {post.author.name
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map((part) => part[0])
+                    .join("")}
+                </div>
+                <div className="min-w-0 text-sm">
+                  <p className="font-semibold">{post.author.name}</p>
+                  {authorRole && (
+                    <p className="mt-0.5 text-muted-foreground">{authorRole}</p>
+                  )}
+                  {updatedDate && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {isFr
+                        ? `Mis à jour le ${updatedDate}`
+                        : `Updated ${updatedDate}`}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
             {toc.length > 0 && (
-              <details className="mt-8 rounded-lg border p-4 lg:hidden">
-                <summary className="cursor-pointer font-semibold">
-                  {isFr ? "Table des matières" : "Table of contents"}
+              <details className="group mt-8 rounded-lg bg-muted/35 p-4 ring-1 ring-foreground/5 lg:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
+                  <span>
+                    {isFr ? "Table des matières" : "Table of contents"}
+                  </span>
+                  <ArrowDown className="size-4 transition-transform group-open:rotate-180" />
                 </summary>
                 <ol className="mt-4 grid gap-2 text-sm">
                   {toc.map((item) => (
@@ -236,12 +248,12 @@ export default async function BlogPostPage({
             </div>
 
             {post.tags?.length ? (
-              <div className="mt-10 flex flex-wrap gap-2 border-t pt-6">
+              <div className="mt-12 flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <Link
                     key={tag}
                     href={`/blog/topics/${encodeURIComponent(tag)}`}
-                    className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-primary"
+                    className="rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
                     #{tag}
                   </Link>
@@ -250,7 +262,7 @@ export default async function BlogPostPage({
             ) : null}
 
             {post.sources?.filter((source) => source.url).length ? (
-              <aside className="mt-10 rounded-lg border bg-muted/25 p-5">
+              <aside className="mt-12 rounded-lg bg-muted/35 p-6 ring-1 ring-foreground/5">
                 <h2 className="text-base font-semibold">
                   {isFr ? "Sources éditoriales" : "Editorial sources"}
                 </h2>

@@ -51,7 +51,7 @@ export function BlogArticleSidebar({
   const adImage = blogSettingsImageUrl(ad?.image, ad?.imageUrl, 720, 480);
 
   return (
-    <aside className="space-y-8 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:pr-2">
+    <aside className="space-y-5 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto lg:pr-2">
       {toc.length > 0 && (
         <div className="hidden lg:block">
           <SidebarSection
@@ -148,7 +148,7 @@ export function BlogArticleSidebar({
       )}
 
       {ad?.enabled !== false && (
-        <section className="overflow-hidden rounded-lg border bg-foreground text-background">
+        <section className="overflow-hidden rounded-lg bg-foreground text-background shadow-[0_22px_55px_-34px_rgba(0,0,0,0.75)]">
           {adImage && (
             <div className="relative aspect-[3/2]">
               <Image
@@ -190,7 +190,7 @@ function SidebarSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="border-t pt-5">
+    <section className="rounded-lg bg-muted/35 p-5 ring-1 ring-foreground/5">
       <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
         <Icon className="size-4 text-primary" />
         {title}

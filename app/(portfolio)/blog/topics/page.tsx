@@ -38,12 +38,12 @@ export default async function TopicsPage() {
 
       <section className="mx-auto max-w-7xl px-6 py-12 sm:py-16">
         {topics.length ? (
-          <div className="grid border-y sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {topics.map(([topic, count], index) => (
               <Link
                 key={topic}
                 href={`/blog/topics/${encodeURIComponent(topic)}`}
-                className="group flex min-h-36 flex-col justify-between border-b p-5 transition-colors hover:bg-muted/35 sm:border-r sm:p-6"
+                className="group flex min-h-36 flex-col justify-between rounded-lg bg-muted/25 p-5 transition-colors hover:bg-muted/50 sm:p-6"
               >
                 <div className="flex items-start justify-between gap-4">
                   <Hash className="size-5 text-primary" />

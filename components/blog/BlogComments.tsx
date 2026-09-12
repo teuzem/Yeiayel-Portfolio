@@ -24,7 +24,7 @@ export function BlogComments({
   );
 
   return (
-    <section id="comments" className="mt-14 border-t pt-10">
+    <section id="comments" className="mt-16">
       <div className="flex items-center gap-3">
         <MessageCircle className="size-6 text-primary" />
         <h2 className="text-2xl font-bold">
@@ -38,7 +38,7 @@ export function BlogComments({
       </p>
 
       <form
-        className="mt-6 grid gap-4 rounded-lg border bg-muted/20 p-5"
+        className="mt-7 grid gap-4 rounded-lg bg-muted/35 p-5 ring-1 ring-foreground/5 sm:p-7"
         onSubmit={async (event) => {
           event.preventDefault();
           setBusy(true);
@@ -132,7 +132,10 @@ export function BlogComments({
       {comments.length > 0 && (
         <div className="mt-8 grid gap-4">
           {comments.map((comment) => (
-            <article key={comment._id} className="rounded-lg border p-5">
+            <article
+              key={comment._id}
+              className="rounded-lg bg-background p-5 shadow-[0_14px_35px_-30px_rgba(0,0,0,0.7)] ring-1 ring-foreground/10"
+            >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-semibold">{comment.name}</h3>
                 <time

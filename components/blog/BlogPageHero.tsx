@@ -24,11 +24,25 @@ export function BlogPageHero({
   return (
     <section
       className={cn(
-        "border-b",
-        dark ? "bg-foreground text-background" : "bg-muted/25 text-foreground",
+        "relative isolate overflow-hidden",
+        dark
+          ? "bg-foreground text-background"
+          : "bg-[linear-gradient(135deg,var(--color-muted),transparent_58%)] text-foreground",
       )}
     >
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:py-20 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+      <div
+        className={cn(
+          "pointer-events-none absolute -right-24 -top-32 size-80 rounded-full border",
+          dark ? "border-background/10" : "border-foreground/10",
+        )}
+      />
+      <div
+        className={cn(
+          "pointer-events-none absolute -right-8 -top-16 size-52 rounded-full border",
+          dark ? "border-background/10" : "border-foreground/10",
+        )}
+      />
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <div className="max-w-4xl">
           <p
             className={cn(
@@ -39,7 +53,7 @@ export function BlogPageHero({
             <Icon className="size-4" />
             {eyebrow}
           </p>
-          <h1 className="mt-5 break-words text-4xl font-bold tracking-tight sm:text-6xl">
+          <h1 className="mt-5 max-w-4xl break-words text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
             {title}
           </h1>
           <p
@@ -55,14 +69,19 @@ export function BlogPageHero({
 
         {metrics.length ? (
           <div
-            className={cn(
-              "flex flex-wrap gap-8 border-t pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0",
-              dark ? "border-background/20" : "border-border",
-            )}
+            className={cn("flex flex-wrap gap-3 lg:max-w-sm lg:justify-end")}
           >
             {metrics.map((metric) => (
-              <div key={metric.label}>
-                <p className="text-3xl font-bold">{metric.value}</p>
+              <div
+                key={metric.label}
+                className={cn(
+                  "min-w-28 rounded-lg px-5 py-4",
+                  dark
+                    ? "bg-background/10 ring-1 ring-background/10"
+                    : "bg-background/80 shadow-sm ring-1 ring-foreground/5 backdrop-blur",
+                )}
+              >
+                <p className="text-2xl font-bold">{metric.value}</p>
                 <p
                   className={cn(
                     "mt-1 text-xs font-semibold uppercase tracking-[0.14em]",

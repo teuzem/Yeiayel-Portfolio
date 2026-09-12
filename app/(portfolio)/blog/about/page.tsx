@@ -92,11 +92,11 @@ export default async function AboutBlogPage() {
                 : "Yeiayel Journal extends the portfolio through detailed analysis, field notes, guides, and reviews designed for professionals, students, and decision-makers."}
             </p>
           </div>
-          <div className="grid border-y sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             {principles.map((principle) => (
               <article
                 key={principle.title}
-                className="border-b p-6 last:border-b-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0"
+                className="rounded-lg bg-muted/30 p-6 ring-1 ring-foreground/5"
               >
                 <principle.icon className="size-6 text-primary" />
                 <h3 className="mt-6 text-lg font-semibold">

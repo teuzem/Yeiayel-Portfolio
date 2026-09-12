@@ -17,7 +17,7 @@ export default async function AuthorsPage() {
 
   return (
     <main>
-      <section className="border-b bg-foreground text-background">
+      <section className="bg-foreground text-background">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-3xl">
             <p className="flex items-center gap-2 text-sm font-semibold text-background/65">
@@ -35,7 +35,7 @@ export default async function AuthorsPage() {
                 : "Meet the professionals turning hands-on data, engineering, and innovation experience into useful editorial insight."}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-8 border-t border-background/20 pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
+          <div className="grid grid-cols-2 gap-3">
             <Metric
               value={authors.length}
               label={isFr ? "auteurs" : "authors"}
@@ -70,7 +70,7 @@ export default async function AuthorsPage() {
                 <Link
                   key={author._id}
                   href={`/blog/authors/${author.slug}`}
-                  className="group grid min-h-72 overflow-hidden border-y bg-background sm:grid-cols-[minmax(170px,0.78fr)_1.22fr]"
+                  className="group grid min-h-72 overflow-hidden rounded-lg bg-background shadow-[0_20px_60px_-40px_rgba(0,0,0,0.7)] ring-1 ring-foreground/10 sm:grid-cols-[minmax(170px,0.78fr)_1.22fr]"
                 >
                   <div className="relative min-h-56 overflow-hidden bg-muted sm:min-h-full">
                     {image ? (
@@ -132,8 +132,8 @@ export default async function AuthorsPage() {
 
 function Metric({ value, label }: { value: number; label: string }) {
   return (
-    <div>
-      <p className="text-3xl font-bold">{value}</p>
+    <div className="min-w-28 rounded-lg bg-background/10 px-5 py-4 ring-1 ring-background/10">
+      <p className="text-2xl font-bold">{value}</p>
       <p className="mt-1 text-xs uppercase tracking-[0.16em] text-background/55">
         {label}
       </p>
