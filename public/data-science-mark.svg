@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Yeiayel data science mark</title>
+  <description id="description">A professional scatter plot with a fitted trend curve.</description>
+  <rect width="512" height="512" rx="104" fill="#0b1726"/>
+  <path d="M112 100v300h296" fill="none" stroke="#d8e5ef" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M136 354c58-9 88-78 138-91 48-13 69 21 116-111" fill="none" stroke="#35c6a5" stroke-width="25" stroke-linecap="round"/>
+  <circle cx="158" cy="320" r="21" fill="#f5b942"/>
+  <circle cx="221" cy="278" r="18" fill="#eaf3f8"/>
+  <circle cx="279" cy="286" r="20" fill="#f5b942"/>
+  <circle cx="335" cy="217" r="18" fill="#eaf3f8"/>
+  <circle cx="386" cy="157" r="22" fill="#35c6a5" stroke="#0b1726" stroke-width="9"/>
+</svg>

@@ -25,34 +25,68 @@ export default async function Icon() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        position: "relative",
         borderRadius: 14,
-        background: "#07111f",
+        background: "#0b1726",
+        position: "relative",
       }}
     >
       <div
         style={{
           position: "absolute",
-          width: 42,
-          height: 42,
-          border: "3px solid #22d3ee",
-          borderRadius: 12,
-          transform: "rotate(45deg)",
+          left: 14,
+          bottom: 13,
+          width: 38,
+          height: 39,
+          borderLeft: "3px solid #d8e5ef",
+          borderBottom: "3px solid #d8e5ef",
+          borderBottomLeftRadius: 3,
         }}
       />
-      <div style={{ display: "flex", gap: 4, alignItems: "flex-end" }}>
-        {[12, 22, 32].map((height, index) => (
-          <div
-            key={height}
-            style={{
-              width: 6,
-              height,
-              borderRadius: 3,
-              background: index === 1 ? "#a3e635" : "#22d3ee",
-            }}
-          />
-        ))}
-      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 19,
+          top: 22,
+          width: 33,
+          height: 23,
+          borderTop: "4px solid #35c6a5",
+          borderRadius: "50%",
+          transform: "rotate(-28deg)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 21,
+          top: 37,
+          width: 6,
+          height: 6,
+          borderRadius: 6,
+          background: "#f5b942",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 31,
+          top: 30,
+          width: 6,
+          height: 6,
+          borderRadius: 6,
+          background: "#eaf3f8",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 42,
+          top: 23,
+          width: 7,
+          height: 7,
+          borderRadius: 7,
+          background: "#35c6a5",
+        }}
+      />
     </div>,
     size,
   );

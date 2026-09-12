@@ -117,6 +117,11 @@ export default defineType({
         "Primary call-to-action button text (e.g., 'Hire Me', 'Get in Touch') / Texte du bouton d'appel à l'action (ex. 'Engagez-moi', 'Contactez-moi')",
     }),
     defineField({
+      name: "ctaTextFr",
+      title: "Main CTA Text (FR) / Texte du CTA principal (FR)",
+      type: "string",
+    }),
+    defineField({
       name: "ctaUrl",
       title: "Main CTA URL / URL du CTA principal",
       type: "string",
@@ -131,8 +136,19 @@ export default defineType({
         "Main headline on homepage / Titre principal de la page d'accueil",
     }),
     defineField({
+      name: "heroHeadlineFr",
+      title: "Hero Headline (FR) / Titre principal (FR)",
+      type: "string",
+    }),
+    defineField({
       name: "heroSubheadline",
       title: "Hero Subheadline / Sous-titre (Hero)",
+      type: "text",
+      rows: 2,
+    }),
+    defineField({
+      name: "heroSubheadlineFr",
+      title: "Hero Subheadline (FR) / Sous-titre (FR)",
       type: "text",
       rows: 2,
     }),
@@ -193,11 +209,22 @@ export default defineType({
           rows: 2,
         },
         {
+          name: "textFr",
+          title: "Footer Text (FR) / Texte du pied de page (FR)",
+          type: "text",
+          rows: 2,
+        },
+        {
           name: "copyrightText",
           title: "Copyright Text / Texte de copyright",
           type: "string",
           description:
             "E.g., '© 2025 Your Name. All rights reserved.' / Ex. '© 2025 Votre Nom. Tous droits réservés.'",
+        },
+        {
+          name: "copyrightTextFr",
+          title: "Copyright Text (FR) / Texte de copyright (FR)",
+          type: "string",
         },
         {
           name: "links",
@@ -211,6 +238,11 @@ export default defineType({
                   name: "title",
                   type: "string",
                   title: "Title / Titre",
+                },
+                {
+                  name: "titleFr",
+                  type: "string",
+                  title: "Title (FR) / Titre (FR)",
                 },
                 { name: "url", type: "string", title: "URL / Lien" },
               ],
@@ -230,6 +262,12 @@ export default defineType({
     defineField({
       name: "maintenanceMessage",
       title: "Maintenance Message / Message de maintenance",
+      type: "text",
+      rows: 3,
+    }),
+    defineField({
+      name: "maintenanceMessageFr",
+      title: "Maintenance Message (FR) / Message de maintenance (FR)",
       type: "text",
       rows: 3,
     }),

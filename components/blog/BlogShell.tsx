@@ -104,8 +104,14 @@ export function BlogShell({
           </div>
           <Link
             href="/blog/search"
-            className="ml-auto grid size-10 place-items-center rounded-md bg-muted/70 transition-colors hover:bg-muted xl:ml-1"
+            className={cn(
+              "ml-auto grid size-10 place-items-center rounded-md transition-colors xl:ml-1",
+              pathname === "/blog/search"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/70 hover:bg-muted",
+            )}
             aria-label={locale === "fr" ? "Rechercher" : "Search"}
+            aria-current={pathname === "/blog/search" ? "page" : undefined}
           >
             <Search className="size-4" />
           </Link>

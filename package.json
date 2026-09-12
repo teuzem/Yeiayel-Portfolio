@@ -11,7 +11,8 @@
     "format": "biome format --write",
     "check:env": "node scripts/check-production-env.mjs",
     "test:ai": "node --env-file-if-exists=.env.local --experimental-strip-types scripts/test-ai-readiness.mjs",
-    "seed:blog": "node scripts/seed-blog-content.mjs",
+    "seed:blog": "node --env-file-if-exists=.env.local scripts/seed-blog-content.mjs",
+    "seed:site": "node --env-file-if-exists=.env.local scripts/seed-site-configuration.mjs",
     "typegen": "sanity schema extract \u0026\u0026 sanity typegen generate"
   },
   "dependencies": {

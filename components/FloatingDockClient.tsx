@@ -2,7 +2,8 @@
 
 import { IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { useOptionalAuth } from "@/components/AuthProvider";
 import { ModeToggle } from "@/components/DarkModeToggle";
 import { useLocale } from "@/components/LocaleProvider";
@@ -28,6 +29,7 @@ interface DockLink {
   href?: string;
   icon: React.ReactNode;
   isExternal?: boolean | null;
+  isActive?: boolean;
   onClick?: () => void;
 }
 
@@ -47,6 +49,8 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
   const { enabled, isSignedIn, signOut } = useOptionalAuth();
   const { dict, locale: uiLocale } = useLocale();
   const { open, isMobile, openMobile } = useSidebar();
+  const pathname = usePathname();
+  const [currentHash, setCurrentHash] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopMoreMenuOpen, setDesktopMoreMenuOpen] = useState(false);
   const [mobileMoreMenuOpen, setMobileMoreMenuOpen] = useState(false);
@@ -54,23 +58,59 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
   const isSidebarOpen = isMobile ? openMobile : open;
   const isFr = uiLocale === "fr";
 
-  const links: DockLink[] = [
-    ...navItems.map((item) => ({
-      title: isFr && item.titleFr ? item.titleFr : item.title || "",
-      href: item.href || "#",
-      icon: <DynamicIcon iconName={item.icon || "IconHome"} />,
-      isExternal: item.isExternal,
-    })),
-    ...(enabled && isSignedIn && !isSidebarOpen
-      ? [
-          {
-            title: dict.nav.signOut,
-            icon: <IconLogout className="h-full w-full" />,
-            onClick: () => signOut(),
-          },
-        ]
-      : []),
-  ];
+  useEffect(() => {
+    const syncHash = () => setCurrentHash(window.location.hash);
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
+
+  const links: DockLink[] = useMemo(
+    () => [
+      ...navItems.map((item) => {
+        const configuredHref = item.href || "#home";
+        const isPortfolioAnchor = configuredHref.startsWith("#");
+        const href =
+          isPortfolioAnchor && pathname !== "/"
+            ? `/${configuredHref}`
+            : configuredHref;
+        const isActive = isPortfolioAnchor
+          ? pathname === "/" &&
+            (currentHash === configuredHref ||
+              (!currentHash && configuredHref === "#home"))
+          : pathname === configuredHref ||
+            (configuredHref !== "/" && pathname.startsWith(configuredHref));
+
+        return {
+          title: isFr && item.titleFr ? item.titleFr : item.title || "",
+          href,
+          icon: <DynamicIcon iconName={item.icon || "IconHome"} />,
+          isExternal: item.isExternal,
+          isActive,
+        };
+      }),
+      ...(enabled && isSignedIn && !isSidebarOpen
+        ? [
+            {
+              title: dict.nav.signOut,
+              icon: <IconLogout className="h-full w-full" />,
+              onClick: () => signOut(),
+            },
+          ]
+        : []),
+    ],
+    [
+      currentHash,
+      dict.nav.signOut,
+      enabled,
+      isFr,
+      isSidebarOpen,
+      isSignedIn,
+      navItems,
+      pathname,
+      signOut,
+    ],
+  );
 
   const desktop = getVisibleLinks(links, MAX_VISIBLE_ITEMS_DESKTOP);
   const mobile = getVisibleLinks(links, MAX_VISIBLE_ITEMS_MOBILE);
@@ -107,6 +147,8 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
                 type="button"
                 onClick={() => setDesktopMoreMenuOpen(!desktopMoreMenuOpen)}
                 className="group relative flex min-h-14 w-16 flex-col items-center justify-center gap-1"
+                aria-expanded={desktopMoreMenuOpen}
+                aria-label={dict.nav.more}
               >
                 <div className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-md transition-all duration-300 group-hover:bg-white/40 dark:border-white/10 dark:bg-white/5 dark:group-hover:bg-white/20">
                   <div className="w-6 h-6 md:w-6 md:h-6 text-neutral-400/60 group-hover/dock:text-neutral-500 dark:text-neutral-300/60 dark:group-hover/dock:text-neutral-300 group-hover:!text-neutral-600 dark:group-hover:!text-neutral-200 transition-colors duration-300">
@@ -153,6 +195,8 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
           type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="w-12 h-12 rounded-full bg-white/20 dark:bg-black/30 hover:bg-white/30 dark:hover:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/20 hover:border-white/40 dark:hover:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex items-center justify-center text-neutral-500 dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all duration-300"
+          aria-expanded={mobileMenuOpen}
+          aria-label={mobileMenuOpen ? dict.nav.closeMenu : dict.nav.more}
         >
           {mobileMenuOpen ? (
             <IconX className="w-6 h-6" />
@@ -181,6 +225,8 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
                   type="button"
                   onClick={() => setMobileMoreMenuOpen(!mobileMoreMenuOpen)}
                   className="group relative flex items-center justify-center w-12 h-12"
+                  aria-expanded={mobileMoreMenuOpen}
+                  aria-label={dict.nav.more}
                 >
                   <div className="relative flex items-center justify-center w-full h-full rounded-full bg-white/25 dark:bg-white/10 backdrop-blur-md border border-white/40 dark:border-white/20 transition-all duration-300 hover:scale-110 hover:bg-gray-500/10 dark:hover:bg-white/20 hover:border-white/60 dark:hover:border-white/30">
                     <div className="w-6 h-6 text-neutral-500 dark:text-neutral-300">
@@ -279,13 +325,17 @@ function DockIcon({
         className={cn(
           isVertical ? verticalIconClasses : horizontalIconClasses,
           showLabel && "h-9 w-9 shrink-0",
+          item.isActive &&
+            "bg-primary text-primary-foreground ring-2 ring-primary/20 dark:bg-primary dark:text-primary-foreground",
         )}
       >
         <div
           className={`w-6 h-6 md:w-6 md:h-6 ${
-            isVertical
-              ? "text-neutral-500 dark:text-neutral-300"
-              : "text-neutral-400/60 group-hover/dock:text-neutral-500 dark:text-neutral-300/60 dark:group-hover/dock:text-neutral-300 group-hover:!text-neutral-600 dark:group-hover:!text-neutral-200 transition-colors duration-300"
+            item.isActive
+              ? "text-primary-foreground"
+              : isVertical
+                ? "text-neutral-500 dark:text-neutral-300"
+                : "text-neutral-400/60 group-hover/dock:text-neutral-500 dark:text-neutral-300/60 dark:group-hover/dock:text-neutral-300 group-hover:!text-neutral-600 dark:group-hover:!text-neutral-200 transition-colors duration-300"
           }`}
         >
           {item.icon}
@@ -318,6 +368,7 @@ function DockIcon({
       className={wrapperClasses}
       scroll={!item.isExternal}
       onClick={onItemClick}
+      aria-current={item.isActive ? "page" : undefined}
     >
       {content}
     </Link>

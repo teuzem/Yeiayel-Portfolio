@@ -58,7 +58,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
   return {
     ...data,
-    faviconUrl: imageUrl(data.favicon, 128, 128),
+    faviconUrl: imageUrl(data.favicon, 512, 512),
     ogImageUrl: imageUrl(data.ogImage, 1200, 630),
     visitorFallbackAvatarUrl: imageUrl(data.visitorFallbackAvatar, 160, 160),
   };
