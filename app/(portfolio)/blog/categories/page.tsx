@@ -31,8 +31,8 @@ export default async function CategoriesPage() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
               {isFr
-                ? "Une bibliothèque structurée autour de la data, de l'IA, de l'ingénierie, de la sécurité et de l'innovation numérique."
-                : "A structured library spanning data, AI, engineering, security, education, and practical digital innovation."}
+                ? "Une bibliothèque structurée autour de la data, des systèmes numériques, de l'ingénierie, de la sécurité et de l'innovation."
+                : "A structured library spanning data, digital systems, engineering, security, education, and practical innovation."}
             </p>
           </div>
           <div className="flex gap-8 border-t pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">

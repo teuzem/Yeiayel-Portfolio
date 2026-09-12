@@ -27,7 +27,7 @@ export function BlogCard({ post, locale }: { post: BlogPost; locale: Locale }) {
       : `${post.readTime || 4} min read`;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-lg">
+    <article className="group flex h-full flex-col overflow-hidden border-y bg-card transition-colors hover:border-primary/45">
       <Link
         href={`/blog/${post.slug}`}
         className="relative block aspect-[16/10] overflow-hidden bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -41,7 +41,7 @@ export function BlogCard({ post, locale }: { post: BlogPost; locale: Locale }) {
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {post.contentType === "Review" && (
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-md bg-background/95 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm">
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 bg-background/95 px-2.5 py-1 text-xs font-semibold text-foreground">
             <Star className="size-3.5 fill-current" />
             {post.product?.score?.toFixed(1) || "Review"}
           </span>

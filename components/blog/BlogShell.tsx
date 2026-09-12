@@ -136,7 +136,7 @@ export function BlogShell({
         )}
       </header>
       {children}
-      <footer className="border-t bg-muted/30">
+      <footer className="bg-muted/20">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2">
             <Image
@@ -148,8 +148,8 @@ export function BlogShell({
             />
             <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
               {locale === "fr"
-                ? "Data science, intelligence artificielle, ingénierie logicielle et innovation numérique appliquées à des besoins concrets."
-                : "Data science, artificial intelligence, software engineering, and digital innovation applied to concrete needs."}
+                ? "Data science, systèmes numériques, ingénierie logicielle et innovation appliquées à des besoins concrets."
+                : "Data science, digital systems, software engineering, and innovation applied to concrete needs."}
             </p>
           </div>
           <div>
@@ -188,7 +188,7 @@ export function BlogShell({
             </div>
           </div>
         </div>
-        <div className="border-t px-6 py-6 text-center text-xs text-muted-foreground">
+        <div className="px-6 py-6 text-center text-xs text-muted-foreground">
           © {new Date().getUTCFullYear()} {name}.{" "}
           {locale === "fr" ? "Tous droits réservés." : "All rights reserved."}
         </div>

@@ -31,7 +31,7 @@ const PROJECTS_QUERY =
 const CATEGORY_LABELS: Record<string, { en: string; fr: string }> = {
   "web-app": { en: "Web Application", fr: "Application Web" },
   "mobile-app": { en: "Mobile App", fr: "Application Mobile" },
-  "ai-ml": { en: "AI/ML Project", fr: "Projet IA/ML" },
+  "ai-ml": { en: "Intelligent Systems", fr: "Systèmes intelligents" },
   "api-backend": { en: "API/Backend", fr: "API/Backend" },
   devops: { en: "DevOps/Infrastructure", fr: "DevOps/Infrastructure" },
   "open-source": { en: "Open Source", fr: "Open Source" },
@@ -104,7 +104,7 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
           <div className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
             <ShieldCheck className="size-5 text-primary" />
             {projects.length}{" "}
-            {isFr ? "réalisations sélectionnées" : "selected case studies"}
+            {isFr ? "réalisations sélectionnées" : "selected projects"}
           </div>
         </div>
 
@@ -116,7 +116,7 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
               <div
                 // biome-ignore lint/suspicious/noArrayIndexKey: grouped carousel slides are positional.
                 key={`project-slide-${slideIndex}`}
-                className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
+                className="grid grid-cols-3 gap-3 sm:gap-5"
               >
                 {projects
                   .slice(slideIndex * 3, slideIndex * 3 + 3)
@@ -148,7 +148,7 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
                     return (
                       <article
                         key={slug || `${project.title}-${projectIndex}`}
-                        className="@container/card group flex min-h-[520px] flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                        className="@container/card group flex min-h-[420px] min-w-0 flex-col overflow-hidden border bg-card transition-colors duration-300 hover:border-primary/50 sm:min-h-[520px]"
                       >
                         <ProjectMedia
                           slug={slug}
@@ -158,10 +158,12 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
                           locale={locale}
                         />
 
-                        <div className="flex flex-1 flex-col p-5 @md/card:p-6">
+                        <div className="flex flex-1 flex-col p-3 @md/card:p-6">
                           <div className="flex items-center justify-between gap-4">
                             <span className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
-                              {categoryLabel(project.category)}
+                              <span className="truncate">
+                                {categoryLabel(project.category)}
+                              </span>
                             </span>
                             <span className="text-xs font-medium text-muted-foreground">
                               {String(
@@ -169,27 +171,27 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
                               ).padStart(2, "0")}
                             </span>
                           </div>
-                          <h3 className="mt-4 text-xl font-bold leading-tight">
+                          <h3 className="mt-3 line-clamp-2 text-sm font-bold leading-tight sm:mt-4 sm:text-xl">
                             {title || "Untitled Project / Projet sans titre"}
                           </h3>
                           {tagline ? (
-                            <p className="mt-3 line-clamp-2 text-sm leading-6 text-muted-foreground">
+                            <p className="mt-2 line-clamp-2 text-[11px] leading-4 text-muted-foreground sm:mt-3 sm:text-sm sm:leading-6">
                               {tagline}
                             </p>
                           ) : null}
                           {outcome ? (
-                            <div className="mt-5 border-l-2 border-primary pl-3">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                            <div className="mt-3 border-l-2 border-primary pl-2 sm:mt-5 sm:pl-3">
+                              <p className="text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground sm:text-[11px] sm:tracking-[0.12em]">
                                 {isFr ? "Impact" : "Outcome"}
                               </p>
-                              <p className="mt-1 line-clamp-2 text-sm font-medium leading-5">
+                              <p className="mt-1 line-clamp-2 text-[11px] font-medium leading-4 sm:text-sm sm:leading-5">
                                 {outcome}
                               </p>
                             </div>
                           ) : null}
 
                           {project.technologies?.length ? (
-                            <div className="mt-5 flex flex-wrap gap-1.5">
+                            <div className="mt-3 flex max-h-8 flex-wrap gap-1 overflow-hidden sm:mt-5 sm:max-h-none sm:gap-1.5">
                               {project.technologies
                                 .slice(0, 4)
                                 // biome-ignore lint/suspicious/noExplicitAny: Sanity reference projection is dynamic.
@@ -203,7 +205,7 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
                                   return name ? (
                                     <span
                                       key={`${slug}-technology-${name}`}
-                                      className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-[11px] font-medium"
+                                      className="inline-flex items-center gap-1 bg-muted px-1.5 py-0.5 text-[9px] font-medium sm:px-2 sm:py-1 sm:text-[11px]"
                                     >
                                       <Code2 className="size-3" />
                                       {name}
@@ -213,13 +215,13 @@ export async function ProjectsSection({ locale = "en" }: { locale?: Locale }) {
                             </div>
                           ) : null}
 
-                          <div className="mt-auto flex items-center gap-2 border-t pt-5">
+                          <div className="mt-auto flex items-center gap-1.5 border-t pt-3 sm:gap-2 sm:pt-5">
                             {project.liveUrl ? (
                               <Link
                                 href={project.liveUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                                className="inline-flex min-w-0 flex-1 items-center justify-center gap-1 bg-primary px-2 py-2 text-[10px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
                               >
                                 {dict.projects.liveDemo}
                                 <ArrowUpRight className="size-4" />

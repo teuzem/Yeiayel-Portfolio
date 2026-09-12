@@ -31,8 +31,8 @@ export default async function AuthorsPage() {
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-background/70">
               {isFr
-                ? "Découvrez les professionnels qui transforment l'expérience data, IA, ingénierie et innovation en analyses directement utiles."
-                : "Meet the professionals turning hands-on data, AI, engineering, and innovation experience into useful editorial insight."}
+                ? "Découvrez les professionnels qui transforment l'expérience data, ingénierie et innovation en analyses directement utiles."
+                : "Meet the professionals turning hands-on data, engineering, and innovation experience into useful editorial insight."}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-8 border-t border-background/20 pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">

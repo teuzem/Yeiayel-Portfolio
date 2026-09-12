@@ -41,8 +41,8 @@ export function BlogArticleSidebar({
       ? ad?.descriptionFr || ad?.description
       : ad?.description || ad?.descriptionFr) ||
     (isFr
-      ? "Transformez une idée data, IA ou numérique en produit concret."
-      : "Turn a data, AI, or digital idea into a practical product.");
+      ? "Transformez une idée data ou numérique en produit concret."
+      : "Turn a data or digital idea into a practical product.");
   const adButton =
     (isFr
       ? ad?.buttonLabelFr || ad?.buttonLabel

@@ -131,17 +131,17 @@ export async function AchievementsSection({
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: grouped carousel slides are positional.
                     key={`featured-slide-${slideIndex}`}
-                    className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
+                    className="grid grid-cols-3 gap-3 sm:gap-5"
                   >
                     {featured
                       .slice(slideIndex * 3, slideIndex * 3 + 3)
                       .map((achievement) => (
                         <div
                           key={`${achievement.title}-${achievement.date}`}
-                          className="@container/card bg-card border-2 border-primary/20 rounded-lg p-6 hover:shadow-lg transition-all hover:scale-[1.02]"
+                          className="@container/card min-w-0 border border-primary/20 bg-card p-3 transition-colors hover:border-primary sm:p-5"
                         >
                           {achievement.image && (
-                            <div className="relative w-full h-32 @md/card:h-48 mb-4 rounded-lg overflow-hidden">
+                            <div className="relative mb-3 aspect-[4/3] w-full overflow-hidden sm:mb-4 sm:aspect-video">
                               <Image
                                 src={urlFor(achievement.image)
                                   .width(400)
@@ -157,10 +157,10 @@ export async function AchievementsSection({
                             </div>
                           )}
 
-                          <div className="flex flex-col @xs/card:flex-row @xs/card:items-center gap-2 mb-3">
+                          <div className="mb-2 flex min-w-0 flex-col gap-1 sm:mb-3 sm:flex-row sm:items-center sm:gap-2">
                             {achievement.type && (
                               <span
-                                className={`px-2.5 py-1 text-xs rounded-full font-medium ${getTypeColor(
+                                className={`truncate px-1.5 py-0.5 text-[9px] font-medium sm:px-2.5 sm:py-1 sm:text-xs ${getTypeColor(
                                   achievement.type,
                                 )}`}
                               >
@@ -168,22 +168,22 @@ export async function AchievementsSection({
                               </span>
                             )}
                             {achievement.date && (
-                              <span className="text-xs @md/card:text-sm text-muted-foreground">
+                              <span className="truncate text-[9px] text-muted-foreground sm:text-sm">
                                 {formatDate(achievement.date)}
                               </span>
                             )}
                           </div>
 
-                          <h4 className="text-lg @md/card:text-xl font-semibold mb-2">
+                          <h4 className="line-clamp-2 text-xs font-semibold sm:text-xl">
                             {titleOf(achievement)}
                           </h4>
                           {achievement.issuer && (
-                            <p className="text-primary font-medium mb-3 text-sm @md/card:text-base truncate">
+                            <p className="mt-1 truncate text-[10px] font-medium text-primary sm:mb-3 sm:text-base">
                               {achievement.issuer}
                             </p>
                           )}
                           {descriptionOf(achievement) && (
-                            <p className="text-muted-foreground mb-4 text-sm @md/card:text-base line-clamp-3">
+                            <p className="mt-2 line-clamp-2 text-[10px] leading-4 text-muted-foreground sm:mb-4 sm:text-base sm:leading-6">
                               {descriptionOf(achievement)}
                             </p>
                           )}
@@ -224,17 +224,17 @@ export async function AchievementsSection({
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: grouped carousel slides are positional.
                     key={`regular-slide-${slideIndex}`}
-                    className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
+                    className="grid grid-cols-3 gap-3 sm:gap-5"
                   >
                     {regular
                       .slice(slideIndex * 3, slideIndex * 3 + 3)
                       .map((achievement) => (
                         <div
                           key={`${achievement.title}-${achievement.date}`}
-                          className="@container/card bg-card border rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 flex flex-col"
+                          className="@container/card flex min-w-0 flex-col border bg-card p-3 transition-colors hover:border-primary sm:p-5"
                         >
                           {achievement.image && (
-                            <div className="relative w-full h-24 @md/card:h-32 mb-4 rounded-lg overflow-hidden">
+                            <div className="relative mb-3 aspect-[4/3] w-full overflow-hidden sm:mb-4 sm:aspect-video">
                               <Image
                                 src={urlFor(achievement.image)
                                   .width(300)
@@ -251,10 +251,10 @@ export async function AchievementsSection({
                           )}
 
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-3">
+                            <div className="mb-2 flex items-center gap-1 sm:mb-3 sm:gap-2">
                               {achievement.type && (
                                 <span
-                                  className={`px-2 py-0.5 @md/card:py-1 text-xs rounded-full font-medium ${getTypeColor(
+                                  className={`truncate px-1.5 py-0.5 text-[9px] font-medium sm:px-2 sm:py-1 sm:text-xs ${getTypeColor(
                                     achievement.type,
                                   )}`}
                                 >
@@ -263,21 +263,21 @@ export async function AchievementsSection({
                               )}
                             </div>
 
-                            <h4 className="text-base @md/card:text-lg font-semibold mb-2 line-clamp-2">
+                            <h4 className="line-clamp-2 text-xs font-semibold sm:text-lg">
                               {titleOf(achievement)}
                             </h4>
                             {achievement.issuer && (
-                              <p className="text-primary font-medium mb-2 text-xs @md/card:text-sm truncate">
+                              <p className="mt-1 truncate text-[10px] font-medium text-primary sm:mb-2 sm:text-sm">
                                 {achievement.issuer}
                               </p>
                             )}
                             {achievement.date && (
-                              <p className="text-xs @md/card:text-sm text-muted-foreground mb-3">
+                              <p className="mt-1 text-[9px] text-muted-foreground sm:mb-3 sm:text-sm">
                                 {formatDate(achievement.date)}
                               </p>
                             )}
                             {descriptionOf(achievement) && (
-                              <p className="text-xs @md/card:text-sm text-muted-foreground line-clamp-3">
+                              <p className="text-[10px] leading-4 text-muted-foreground sm:text-sm sm:leading-6">
                                 {descriptionOf(achievement)}
                               </p>
                             )}

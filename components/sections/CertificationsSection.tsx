@@ -82,7 +82,7 @@ export async function CertificationsSection({
               <div
                 // biome-ignore lint/suspicious/noArrayIndexKey: grouped carousel slides are positional.
                 key={`certification-slide-${slideIndex}`}
-                className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12"
+                className="grid grid-cols-2 gap-3 sm:gap-6 md:gap-10"
               >
                 {certifications
                   .slice(slideIndex * 2, slideIndex * 2 + 2)
@@ -115,19 +115,19 @@ export async function CertificationsSection({
                     return (
                       <article
                         key={`${row.issuer}-${row.name}-${row.issueDate}`}
-                        className="w-full max-w-[430px] relative rounded-2xl border-2 border-primary/40 bg-card shadow-xl overflow-hidden flex flex-col"
+                        className="relative flex w-full min-w-0 flex-col overflow-hidden border border-primary/40 bg-card"
                       >
                         {/* Decorative top band */}
                         <div className="h-2 w-full bg-primary/60" />
 
                         {/* Inner award panel */}
-                        <div className="rounded-xl border border-primary/25 bg-card/80 m-4 p-6 text-center flex flex-col">
-                          <p className="text-xs tracking-[0.18em] uppercase text-muted-foreground">
+                        <div className="m-2 flex flex-col border border-primary/25 bg-card/80 p-2 text-center sm:m-4 sm:p-6">
+                          <p className="truncate text-[8px] uppercase tracking-[0.1em] text-muted-foreground sm:text-xs sm:tracking-[0.18em]">
                             {row.issuer}
                           </p>
 
                           {row.logo && (
-                            <div className="mx-auto mt-4 h-16 w-16 rounded-full border-2 border-primary/40 bg-muted p-1.5 relative">
+                            <div className="relative mx-auto mt-3 size-9 rounded-full border border-primary/40 bg-muted p-1 sm:mt-4 sm:size-16 sm:border-2 sm:p-1.5">
                               <Image
                                 src={urlFor(row.logo)
                                   .width(96)
@@ -140,20 +140,20 @@ export async function CertificationsSection({
                             </div>
                           )}
 
-                          <p className="mt-5 text-sm text-muted-foreground leading-relaxed">
+                          <p className="mt-3 text-[9px] leading-4 text-muted-foreground sm:mt-5 sm:text-sm sm:leading-relaxed">
                             {dict.certifications.awardedTo}
                           </p>
 
-                          <p className="mt-1 text-2xl font-serif font-bold text-foreground tracking-wide">
+                          <p className="mt-1 truncate text-xs font-serif font-bold tracking-wide text-foreground sm:text-2xl">
                             {ownerName(row)}
                           </p>
 
-                          <h3 className="mt-6 text-2xl font-semibold text-primary leading-snug text-center">
+                          <h3 className="mt-3 line-clamp-2 text-xs font-semibold leading-tight text-primary sm:mt-6 sm:text-2xl sm:leading-snug">
                             {name}
                           </h3>
 
                           {row.issueDate && (
-                            <p className="mt-3 text-sm text-muted-foreground">
+                            <p className="mt-2 text-[9px] text-muted-foreground sm:mt-3 sm:text-sm">
                               {dict.certifications.issuedOn}{" "}
                               <span className="font-medium text-foreground">
                                 {formatDate(row.issueDate)}
@@ -162,17 +162,17 @@ export async function CertificationsSection({
                           )}
 
                           {description && (
-                            <p className="mt-4 text-xs text-muted-foreground leading-relaxed px-2">
+                            <p className="mt-2 line-clamp-2 px-1 text-[9px] leading-4 text-muted-foreground sm:mt-4 sm:px-2 sm:text-xs sm:leading-relaxed">
                               {description}
                             </p>
                           )}
 
                           {skillTags.length > 0 && (
-                            <div className="flex flex-wrap justify-center gap-1.5 mt-3">
+                            <div className="mt-2 flex max-h-8 flex-wrap justify-center gap-1 overflow-hidden sm:mt-3 sm:max-h-none sm:gap-1.5">
                               {skillTags.map((t: string) => (
                                 <span
                                   key={t}
-                                  className="px-2 py-0.5 text-[10px] rounded-full bg-primary/10 text-primary"
+                                  className="bg-primary/10 px-1 py-0.5 text-[8px] text-primary sm:px-2 sm:text-[10px]"
                                 >
                                   {t}
                                 </span>
@@ -181,14 +181,14 @@ export async function CertificationsSection({
                           )}
 
                           {row.credentialId && (
-                            <p className="mt-2 text-[10px] text-muted-foreground break-all">
+                            <p className="mt-2 line-clamp-1 break-all text-[8px] text-muted-foreground sm:text-[10px]">
                               {dict.certifications.credentialId}:{" "}
                               {row.credentialId}
                             </p>
                           )}
 
                           {row.expiryDate && (
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-[8px] text-muted-foreground sm:text-[10px]">
                               {dict.certifications.validUntil}:{" "}
                               {formatDate(row.expiryDate)}
                               {isExpired(row.expiryDate)
@@ -199,13 +199,13 @@ export async function CertificationsSection({
                         </div>
 
                         {/* Signature / footer */}
-                        <div className="border-t border-border mx-4 pt-3 pb-4 text-[10px] text-muted-foreground">
+                        <div className="mx-2 border-t border-border px-1 pb-2 pt-2 text-[8px] text-muted-foreground sm:mx-4 sm:pb-4 sm:pt-3 sm:text-[10px]">
                           {row.issuer}
                         </div>
 
                         {/* View button */}
                         {viewUrl && (
-                          <div className="mt-1 px-4 py-3">
+                          <div className="mt-1 px-2 py-2 sm:px-4 sm:py-3">
                             {hasDocument ? (
                               <CertificateViewButton
                                 href={viewUrl}

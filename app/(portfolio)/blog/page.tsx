@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = blogSettings.name || "Yeiayel Journal";
   const description =
     blogSettings.heroDescription ||
-    "Practical insights on data science, artificial intelligence, software engineering, and digital innovation.";
+    "Practical insights on data science, digital systems, software engineering, and innovation.";
   const image = blogImageUrl(blogSettings.logo, 1200, 630);
   return {
     title,
@@ -69,8 +69,8 @@ export default async function BlogPage() {
       ? settings.heroDescriptionFr || settings.heroDescription
       : settings.heroDescription || settings.heroDescriptionFr) ||
     (isFr
-      ? "Data science, IA, ingénierie logicielle et innovation numérique expliquées avec rigueur et orientées vers l'action."
-      : "Data science, AI, software engineering, and digital innovation explained rigorously and built for action.");
+      ? "Data science, systèmes numériques, ingénierie logicielle et innovation expliquées avec rigueur et orientées vers l'action."
+      : "Data science, digital systems, software engineering, and innovation explained rigorously and built for action.");
 
   return (
     <main>
@@ -218,7 +218,7 @@ export default async function BlogPage() {
         </section>
       )}
 
-      <section className="border-t bg-foreground px-6 py-16 text-background">
+      <section className="bg-foreground px-6 py-16 text-background">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-bold">
             {isFr

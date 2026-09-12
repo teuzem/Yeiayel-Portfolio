@@ -43,7 +43,7 @@ export function ProjectMedia({
   const source = failed ? (host ? null : cmsImage) : screenshotUrl || cmsImage;
 
   return (
-    <div className="relative aspect-[16/10] overflow-hidden bg-neutral-950">
+    <div className="relative aspect-[4/3] overflow-hidden bg-neutral-950 sm:aspect-[16/10]">
       {source ? (
         <Image
           src={source}

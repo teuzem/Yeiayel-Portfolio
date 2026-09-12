@@ -60,8 +60,8 @@ export default async function AboutBlogPage() {
         title={isFr ? "À propos du Journal Yeiayel" : "About Yeiayel Journal"}
         description={
           isFr
-            ? "Un média professionnel consacré à la data science, l'intelligence artificielle, l'ingénierie logicielle, le cloud, la sécurité et l'innovation numérique."
-            : "A professional publication focused on data science, artificial intelligence, software engineering, cloud, security, and digital innovation."
+            ? "Un média professionnel consacré à la data science, aux systèmes numériques, à l'ingénierie logicielle, au cloud, à la sécurité et à l'innovation."
+            : "A professional publication focused on data science, digital systems, software engineering, cloud, security, and innovation."
         }
         icon={BookOpenCheck}
         metrics={[
